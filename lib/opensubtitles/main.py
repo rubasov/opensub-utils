@@ -1,7 +1,9 @@
 #! /usr/bin/python
 
 import logging
+import os
 import StringIO
+import sys
 import urlparse
 import zipfile
 
@@ -11,8 +13,6 @@ import opensubtitles.hash
 import opensubtitles.useragent
 import subtitle
 
-# xmlstarlet select --template --value-of \
-#     "/search/results/subtitle[1]/download"
 def extract_result_urls(xml):
 
     """
@@ -76,29 +76,34 @@ def extract_subtitles(archive_content):
 
     return rv
 
-def get_subtitle(movie_file_list, subtitle_language):
+def get_subtitle(movie_file_list, subtitle_language, http_proxy):
 
     def best_result_url(lst):
         return lst[0]
 
-    #def best_candidate_for_subtitle(subtitle_list):
-    #    for sub in sorted(subtitle_list):
-    #        if subtitle.path_has_subtitle_extension( sub.name ):
-    #            return sub
-    #    raise Exception("could not find known subtitle extension in archive")
+    def user_agent(
+        program = os.path.basename( sys.argv[0] ),
+        version = "0.9",
+        ):
+        return "{}/{}".format(program, version)
 
-    ua = opensubtitles.useragent.UserAgent( server = "www.opensubtitles.org" )
+    ua = opensubtitles.useragent.UserAgent(
+        server = "www.opensubtitles.org",
+        user_agent = user_agent(),
+        http_proxy = http_proxy,
+        )
 
     subtitle_list = \
         extract_subtitles(
-        ua.get_subtitle_archive(
+        ua.get(
         best_result_url(
         extract_result_urls(
-        ua.get_search_page(
+        ua.get(
+        ua.search_page_url(
             sublanguageid = subtitle_language,
             moviehash = opensubtitles.hash.movie_hash(movie_file_list),
             file_count = len(movie_file_list),
-            )))))
+            ))))))
 
     movie_file_count = len(movie_file_list)
     subtitle_count = len(subtitle_list)

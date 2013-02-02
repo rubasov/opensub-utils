@@ -19,19 +19,21 @@ class UserAgent(object):
     # construct the urls more carefully and care for url encoding.
 
     def get_search_page(self, moviehash, sublanguageid, file_count=1):
-        # keep signature and cache_key in sync
+        # keep signature and cache key in sync
 
         """
-        GET search result atom feed (cached).
+        GET search result simplexml (cached).
+
+        http://trac.opensubtitles.org/projects/opensubtitles/wiki/PageInXML
 
         Takes:
             moviehash - hash of movie (hex string)
                 cf. module opensubtitles.hash
-            sublanguageid - subtitle language according to ISO 639-2 (string) 
+            sublanguageid - subtitle language according to ISO 639-2 (string)
             file_count - how many files make up the movie?
 
         Returns:
-            content of search result page (atom xml)
+            content of search result page (xml)
 
         Side effect:
             caching
@@ -46,7 +48,7 @@ class UserAgent(object):
             + "/sublanguageid-{}".format(sublanguageid)
             + "/moviehash-{}".format(moviehash)
             + "/subsumcd-{}".format(file_count)
-            + "/atom_1_00"
+            + "/simplexml"
             )
         logging.debug( "search_page_url: {}".format(url) )
 
@@ -57,8 +59,8 @@ class UserAgent(object):
             )
         return content
 
-    def get_subtitle_archive(self, subtitle_id):
-        # keep signature and cache_key in sync
+    def get_subtitle_archive(self, url):
+        # keep signature and cache key in sync
 
         """
         GET subtitle zip archive (cached).
@@ -73,15 +75,7 @@ class UserAgent(object):
             caching
         """
 
-        cache_key = "{}.zip".format(subtitle_id)
-
-        url = ( "http://"
-            + self.server
-            + "/en"
-            + "/subtitleserve"
-            + "/sub/{}".format(subtitle_id)
-            )
-        logging.debug( "subtitle_archive_url: {}".format(url) )
+        cache_key = "{}.zip".format( url.split("/")[-1] )
 
         content = cache.get_content_cached(
             cache_subdir = "subtitle-archive",

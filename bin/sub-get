@@ -58,37 +58,60 @@ def setup_logging(verbosity):
 
     return None
 
+def hardcoded_proxy():
+
+    return "127.0.0.1:8123"
+
+def default_proxy():
+
+    try:
+        proxy = os.environ["http_proxy"]
+    except KeyError:
+        proxy = hardcoded_proxy()
+    return proxy
+
 def parse_cli_args():
 
     """Procedure for command line argument parsing."""
 
     p = argparse.ArgumentParser()
 
-    # TODO -o --out [-|FILE]
-    # TODO --print-hash
+    # proxy setting preference order:
+    #    1. use cli argument if given
+    #    2. use environment variable if set
+    #    3. use hardcoded default
     p.add_argument(
-        "-v", "--verbose",
-        action = "count",
-        default = 0,
-        help = "increase verbosity (-v, -vv)",
+        "-p", "--http-proxy",
+        action = "store",
+        default = default_proxy(),
+        help = "http_proxy:port, optional, default: {}".format(
+            hardcoded_proxy()),
         )
-    # FIXME a movie may consist of several files (cd1, cd2, etc)
-    p.add_argument("movie_file",
-        nargs = "+",
-        help = "movie file (or files belonging to the same movie)",
-        )
+
     # FIXME validate language id
-    # TODO multiple languages in preference order?
     p.add_argument(
         "-l", "--language",
         action = "store",
         default = "eng",
-        help = "subtitle language, optional, default: FIXME",
+        help = "subtitle language (ISO 639), optional, default: eng",
+        )
+
+    p.add_argument(
+        "-v", "--verbose",
+        action = "count",
+        default = 0,
+        help = "increase verbosity (-v, -vv), optional",
+        )
+
+    p.add_argument("movie_file",
+        nargs = "+",
+        help = "movie file (or files belonging to the same movie)",
         )
 
     return p.parse_args()
 
 def main():
+
     args = parse_cli_args()
     setup_logging( verbosity = args.verbose )
 

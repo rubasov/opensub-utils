@@ -1,0 +1,143 @@
+#! /usr/bin/python
+
+"""
+NAME
+    sub-get - download subtitle for a movie from opensubtitles.org
+
+SYNOPSIS
+    sub-get MOVIE-FILE [MOVIE-FILE-CD2 ...]
+
+TODO
+    cache
+        expiry
+        respect http cache control
+    proxy support
+    handle >1cd subtitles
+    use opensubtitle.org's xmlrpc api ?
+    documentation
+    license
+    put under git
+        upload to github
+    rename to opensub-get ?
+    unit test suite
+        if __name__ == "__main__": test()
+    python2/3 compatibility
+    unix/windows portability
+"""
+
+import argparse
+import logging
+import os
+import sys
+import tempfile
+
+sys.path.append(
+     os.path.join(
+         os.path.dirname(__file__), "..", "lib" ) )
+
+import opensubtitles.main
+
+def setup_logging(verbosity):
+
+    log_level_dict = {
+        0: "WARNING",
+        1: "INFO",
+        2: "DEBUG",
+        }
+
+    try:
+        log_level = getattr( logging, log_level_dict[verbosity] )
+    except KeyError:
+        raise Exception(
+            "invalid log level: -{}".format( "v" * verbosity ) )
+
+    logging.basicConfig(
+        level = log_level,
+        format = "%(levelname)s: %(filename)s:%(lineno)d: %(message)s",
+        )
+
+    return None
+
+def parse_cli_args():
+
+    """Procedure for command line argument parsing."""
+
+    p = argparse.ArgumentParser()
+
+    # TODO -o --out [-|FILE]
+    # TODO --print-hash
+    p.add_argument(
+        "-v", "--verbose",
+        action = "count",
+        default = 0,
+        help = "increase verbosity (-v, -vv)",
+        )
+    # FIXME a movie may consist of several files (cd1, cd2, etc)
+    p.add_argument("movie_file",
+        nargs = "+",
+        help = "movie file (or files belonging to the same movie)",
+        )
+    # FIXME validate language id
+    # TODO multiple languages in preference order?
+    p.add_argument(
+        "-l", "--language",
+        action = "store",
+        default = "eng",
+        help = "subtitle language, optional, default: FIXME",
+        )
+
+    return p.parse_args()
+
+def main():
+    args = parse_cli_args()
+    setup_logging( verbosity = args.verbose )
+
+    movie_file_list = args.movie_file
+    logging.debug( "movie_file_list: {}".format(movie_file_list) )
+
+    for movie_file in movie_file_list:
+        assert os.path.isfile(movie_file), \
+            "no such file: {}".format(movie_file)
+
+    # maybe FIXME early check-and-skip of subtitle(s) existing already
+    #     if we don't have such subtitle.movie_has_subtitle() is useless
+
+    subtitle_list = opensubtitles.main.get_subtitle(
+        movie_file_list = movie_file_list,
+        subtitle_language = args.language,
+        )
+
+    # assumptions:
+    #   * the user provided movie_file_list in "natural order"
+    #   * subtitle_list is sorted by subtitle.name,
+    #     therefore it is in "natural order"
+    for movie_file, subtitle in zip( movie_file_list, subtitle_list ):
+
+        assert not movie_file is None
+        assert not subtitle is None
+
+        base, _ = os.path.splitext(movie_file)
+        _, extension = os.path.splitext(subtitle.name)
+        dest = base + extension
+
+        logging.debug(
+            "extract_rename: {} -> {}".format(subtitle.name, dest) )
+
+        #with tempfile.NamedTemporaryFile(
+        #    mode="wb",
+        #    prefix=".tmp-sub-",
+        #    delete=False,
+        #    dir=os.path.dirname( args.movie_path )) as t:
+        #    t.write( subtitle.content )
+        #    subtitle_tmp_file = t.name
+        #    logging.debug( "subtitle_tmp_file: {}".format(subtitle_tmp_file) )
+
+        ## FIXME os.link is unix-only
+        #os.link( subtitle_tmp_file, dest )
+        #os.unlink( subtitle_tmp_file )
+
+    # give useful error msg if the move was unsuccessful
+    # cleanup
+
+if __name__ == "__main__":
+    main()

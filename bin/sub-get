@@ -72,7 +72,15 @@ def default_proxy():
 
 def parse_cli_args():
 
-    """Procedure for command line argument parsing."""
+    """
+    Procedure for command line argument parsing.
+
+    TODO:
+        -o --out [-|FILE_FMT_STRING]
+        --out-as-in-archive
+        --server
+        --print-hash
+    """
 
     p = argparse.ArgumentParser()
 

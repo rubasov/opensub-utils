@@ -122,12 +122,10 @@ def main():
         assert os.path.isfile(movie_file), \
             "no such file: {}".format(movie_file)
 
-    # maybe FIXME early check-and-skip of subtitle(s) existing already
-    #     if we don't have such subtitle.movie_has_subtitle() is useless
-
     subtitle_list = opensubtitles.main.get_subtitle(
         movie_file_list = movie_file_list,
         subtitle_language = args.language,
+        http_proxy = args.http_proxy,
         )
 
     # assumptions:

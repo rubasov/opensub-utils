@@ -1,45 +1,40 @@
 #! /usr/bin/python
 
 import logging
-
-import cache
+import urllib2
 
 class UserAgent(object):
 
     """
-    Wrap HTTP queries to subtitle servers.
+    Wrap HTTP communication to subtitle servers.
     """
 
-    def __init__(self, server):
+    def __init__(self, server, user_agent, http_proxy):
         self.server = server
+        self.user_agent = user_agent
+        self.http_proxy = http_proxy
 
     # maybe FIXME encode urls
     #
     # Depending on where the inputs come from you may need to
     # construct the urls more carefully and care for url encoding.
 
-    def get_search_page(self, moviehash, sublanguageid, file_count=1):
-        # keep signature and cache key in sync
+    def search_page_url(self, moviehash, sublanguageid, file_count=1):
 
         """
-        GET search result simplexml (cached).
+        Construct search page URL for simplexml format.
 
         http://trac.opensubtitles.org/projects/opensubtitles/wiki/PageInXML
 
         Takes:
             moviehash - hash of movie (hex string)
                 cf. module opensubtitles.hash
-            sublanguageid - subtitle language according to ISO 639-2 (string)
+            sublanguageid - subtitle language according to ISO 639 (string)
             file_count - how many files make up the movie?
 
         Returns:
-            content of search result page (xml)
-
-        Side effect:
-            caching
+            search page URL
         """
-
-        cache_key = "{}-{}-{}.xml".format(moviehash, sublanguageid, file_count)
 
         url = ( "http://"
             + self.server
@@ -51,35 +46,24 @@ class UserAgent(object):
             + "/simplexml"
             )
         logging.debug( "search_page_url: {}".format(url) )
+        return url
 
-        content = cache.get_content_cached(
-            cache_subdir = "search-results",
-            cache_key = cache_key,
-            url = url,
-            )
-        return content
-
-    def get_subtitle_archive(self, url):
-        # keep signature and cache key in sync
+    def get(self, url):
 
         """
-        GET subtitle zip archive (cached).
+        GET URL with preset user agent and proxy.
 
         Takes:
-            subtitle_id - subtitle id (numeric string)
+            url - URL to get
 
         Returns:
-            content of subtitle zip archive
-
-        Side effect:
-            caching
+            content of resource at URL
         """
 
-        cache_key = "{}.zip".format( url.split("/")[-1] )
+        headers = { "User-Agent" : self.user_agent }
+        req     = urllib2.Request(url=url, headers=headers)
+        stream  = urllib2.urlopen(req)
+        content = stream.read()
+        stream.close()
 
-        content = cache.get_content_cached(
-            cache_subdir = "subtitle-archive",
-            cache_key = cache_key,
-            url = url,
-            )
         return content

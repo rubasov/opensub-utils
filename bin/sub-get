@@ -8,9 +8,6 @@ SYNOPSIS
     sub-get MOVIE-FILE [MOVIE-FILE-CD2 ...]
 
 TODO
-    kill cache support
-    proxy support
-        use polipo for development
     documentation
     license
     upload to github
@@ -26,16 +23,16 @@ TODO
 """
 
 import argparse
+import errno
 import logging
 import os
 import sys
-import tempfile
 
 sys.path.append(
      os.path.join(
          os.path.dirname(__file__), "..", "lib" ) )
 
-import opensubtitles.main
+import opensubtitles
 
 def setup_logging(verbosity):
 
@@ -58,18 +55,6 @@ def setup_logging(verbosity):
 
     return None
 
-def hardcoded_proxy():
-
-    return "127.0.0.1:8123"
-
-def default_proxy():
-
-    try:
-        proxy = os.environ["http_proxy"]
-    except KeyError:
-        proxy = hardcoded_proxy()
-    return proxy
-
 def parse_cli_args():
 
     """
@@ -84,18 +69,6 @@ def parse_cli_args():
 
     p = argparse.ArgumentParser()
 
-    # proxy setting preference order:
-    #    1. use cli argument if given
-    #    2. use environment variable if set
-    #    3. use hardcoded default
-    p.add_argument(
-        "-p", "--http-proxy",
-        action = "store",
-        default = default_proxy(),
-        help = "http_proxy:port, optional, default: {}".format(
-            hardcoded_proxy()),
-        )
-
     # FIXME validate language id
     p.add_argument(
         "-l", "--language",
@@ -105,15 +78,29 @@ def parse_cli_args():
         )
 
     p.add_argument(
+        "-s", "--server",
+        action = "store",
+        default = "www.opensubtitles.org",
+        help = "server to query, optional, default: www.opensubtitles.org",
+        )
+
+    # FIXME --template-num-start, default=1
+    p.add_argument(
+        "-t", "--template",
+        action = "store",
+        help = "name output files like: 'template-{num}.{ext}', optional",
+        )
+
+    p.add_argument(
         "-v", "--verbose",
         action = "count",
         default = 0,
         help = "increase verbosity (-v, -vv), optional",
         )
 
-    p.add_argument("movie_file",
+    p.add_argument("movie",
         nargs = "+",
-        help = "movie file (or files belonging to the same movie)",
+        help = "video file (or files belonging to the same movie)",
         )
 
     return p.parse_args()
@@ -123,50 +110,60 @@ def main():
     args = parse_cli_args()
     setup_logging( verbosity = args.verbose )
 
-    movie_file_list = args.movie_file
-    logging.debug( "movie_file_list: {}".format(movie_file_list) )
+    for video_file in args.movie:
+        if not os.path.isfile(video_file):
+            raise Exception( "no such file: {}".format(video_file) )
 
-    for movie_file in movie_file_list:
-        assert os.path.isfile(movie_file), \
-            "no such file: {}".format(movie_file)
+    def user_agent(
+        program = os.path.basename( sys.argv[0] ),
+        version = "0.9",
+        ):
+        return "{}/{}".format(program, version)
 
-    subtitle_list = opensubtitles.main.get_subtitle(
-        movie_file_list = movie_file_list,
-        subtitle_language = args.language,
-        http_proxy = args.http_proxy,
+    ua = opensubtitles.UserAgent(
+        server = args.server,
+        user_agent = user_agent(),
         )
 
-    # assumptions:
-    #   * the user provided movie_file_list in "natural order"
-    #   * subtitle_list is sorted by subtitle.name,
-    #     therefore it is in "natural order"
-    for movie_file, subtitle in zip( movie_file_list, subtitle_list ):
+    subtitle_list = ua.get_subtitle(
+        movie = args.movie,
+        language = args.language,
+        )
 
-        assert not movie_file is None
-        assert not subtitle is None
+    # name output files by --template
+    if not args.template is None:
 
-        base, _ = os.path.splitext(movie_file)
-        _, extension = os.path.splitext(subtitle.name)
-        dest = base + extension
+        for idx, subtitle in enumerate(subtitle_list, start=1):
 
-        logging.debug(
-            "extract_rename: {} -> {}".format(subtitle.name, dest) )
+            _, ext = os.path.splitext(subtitle.name)
+            assert ext != ""
+            path = args.template.format(num=idx, ext=ext[1:])
 
-        #with tempfile.NamedTemporaryFile(
-        #    mode="wb",
-        #    prefix=".tmp-sub-",
-        #    delete=False,
-        #    dir=os.path.dirname( args.movie_path )) as t:
-        #    t.write( subtitle.content )
-        #    subtitle_tmp_file = t.name
-        #    logging.debug( "subtitle_tmp_file: {}".format(subtitle_tmp_file) )
+            logging.debug("sub_path: {}".format(path))
 
-        ## FIXME os.link is unix-only
-        #os.link( subtitle_tmp_file, dest )
-        #os.unlink( subtitle_tmp_file )
+            try:
+                subtitle.write(path=path)
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    pass
+                else:
+                    raise
 
-    # give useful error msg if the move was unsuccessful
-    # cleanup
+    ## assumptions:
+    ##   * the user provided video files in "natural order"
+    ##   * subtitle_list is sorted by subtitle.name,
+    ##     therefore it is in "natural order"
+    #for video_file, subtitle in zip( args.movie, subtitle_list ):
+
+    #    assert not video_file is None
+    #    assert not subtitle is None
+
+    #    base, _ = os.path.splitext(video_file)
+    #    _, extension = os.path.splitext(subtitle.name)
+    #    dest = base + extension
+
+    #    logging.debug(
+    #        "extract_rename: {} -> {}".format(subtitle.name, dest) )
 
 if __name__ == "__main__":
     main()

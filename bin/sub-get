@@ -5,21 +5,91 @@ NAME
     sub-get - download subtitle for a movie from opensubtitles.org
 
 SYNOPSIS
-    sub-get MOVIE-FILE [MOVIE-FILE-CD2 ...]
+    sub-get [-h] [-v|-vv] [-l lang] [...] MOVIE-FILE [MOVIE-FILE-CD2 ...]
+
+DESCRIPTION
+    Using the hash of video files query opensubtitles.org.
+    Download a subtitle archive and extract the subtitles.
+
+SUBTITLE FILE NAMING SCHEMES
+    1) Default: to match video file names.
+
+        This mode assembles the output file name from:
+
+        * the input file name minus its extension
+        * the subtitle extensions from the archive
+
+        Example:
+
+        arguments      output files
+        --             --
+        movie_cd1.avi  movie_cd1.srt (or .sub, .ass, whatever)
+        movie_cd2.avi  movie_cd2.srt
+        ...
+
+    2) Use a template: --template 'foo-{num}.{ext}'.
+
+        {num} Will be substituted by a running index of subtitle files.
+              Doesn't make much sense unless you have multiple subtitle files.
+              Starts counting from 1.
+
+        {ext} Will be substituted by the subtitle extension
+              as it was in the archive.
+
+        '--template /dev/stdout' writes the concatenated output to stdout.
+
+    3) Extract the archive as it is: --extract.
+
+        Keep the subtitle file names as they are in the archive, but chop
+        the leading directories if there's any.
+
+OPTIONS
+    FIXME
+    -l --language
+    -s --server
+    -t --template
+    -v --verbose
+    -x --extract
+
+ENVIRONMENT VARIABLES
+    http_proxy FIXME
+
+LICENSE
+    FIXME
+
+CREDITS
+    Many thanks to opensubtitles.org's folks for their great service.
+    Copyright 2013 Bence Romsics <rubasov@gmail.com>
 
 TODO
-    documentation
-    license
-    upload to github
-        ask for review by opensubtitles' folks
-    rename to opensub-get ?
-    unit test suite
-        if __name__ == "__main__": test()
-    python2/3 compatibility
-    unix/windows portability
-    setup.py
-    use opensubtitle.org's xmlrpc api?
-    multiple languages in preference order?
+    functional
+        better handling of search results
+            nice error message if subtitle not found
+                hint on embedded subtitle streams
+                link to manual search
+            select 2nd, 3rd, etc.
+        parameters
+            --template -
+                stdout
+            --print-hash
+            --language lang1,lang2,...
+                preference order
+                validate language id
+            --template-num-start, default=1
+        overwrite
+            refuse to do it by default
+            do it if asked explicitly
+        upload to github
+            ask for review by opensubtitles' folks
+        documentation
+        license
+        rename to opensub-get ?
+    development practice
+        python2/3 compatibility
+        unix/windows portability
+        setup.py
+        unit test suite
+            if __name__ == "__main__": test()
 """
 
 import argparse
@@ -35,6 +105,10 @@ sys.path.append(
 import opensubtitles
 
 def setup_logging(verbosity):
+
+    """
+    Set log level and format.
+    """
 
     log_level_dict = {
         0: "WARNING",
@@ -59,32 +133,24 @@ def parse_cli_args():
 
     """
     Procedure for command line argument parsing.
-
-    TODO:
-        -o --out [-|FILE_FMT_STRING]
-        --out-as-in-archive
-        --server
-        --print-hash
     """
 
     p = argparse.ArgumentParser()
 
-    # FIXME validate language id
     p.add_argument(
         "-l", "--language",
         action = "store",
         default = "eng",
-        help = "subtitle language (ISO 639), optional, default: eng",
+        help = "subtitle language id (ISO 639), default: eng",
         )
 
     p.add_argument(
         "-s", "--server",
         action = "store",
         default = "www.opensubtitles.org",
-        help = "server to query, optional, default: www.opensubtitles.org",
+        help = "server to query, default: www.opensubtitles.org",
         )
 
-    # FIXME --template-num-start, default=1
     p.add_argument(
         "-t", "--template",
         action = "store",
@@ -102,7 +168,7 @@ def parse_cli_args():
         "-x", "--extract",
         action = "store_true",
         default = False,
-        help = "extract subtitles according to their names in archive, optional",
+        help = "extract subtitles as named in the archive, optional",
         )
 
     p.add_argument("movie",

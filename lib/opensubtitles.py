@@ -16,7 +16,19 @@ from lxml import etree
 def file_hash(file_to_hash):
 
     """
+    Hash a file.
+
+    The algorithm comes from this page:
     http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+
+    Takes:
+        file_to_hash - path of the file
+
+    Returns:
+        hex string of hash
+
+    Raises:
+        Exception - file too small: < 128 KiB
     """
 
     def chunk_hash(f, hash_value):
@@ -33,8 +45,7 @@ def file_hash(file_to_hash):
 
     filesize = os.path.getsize(file_to_hash)
     if filesize < 2 * 64 * 1024:
-        raise Exception(
-            "opensubtitles.org's hash spec doesn't allow files < 128 KiB" )
+        raise Exception( "file too small: < 128 KiB" )
 
     hash_value = filesize
     with open(file_to_hash, "rb") as f:
@@ -46,16 +57,22 @@ def file_hash(file_to_hash):
     logging.debug( "hash: {}".format(hex_string) )
     return hex_string
 
-def movie_hash(movie_file_list):
+def movie_hash(file_list):
 
     """
     Hash multi-CD movies by the first file, ignore the rest.
+
+    Takes:
+        file_list - list of video files belonging to the movie
+
+    Returns:
+        hex string of hash
     """
 
-    movie_hash = file_hash( movie_file_list[0] )
+    movie_hash = file_hash( file_list[0] )
     return movie_hash
 
-def extract_result_urls(xml):
+def extract_subtitle_urls(xml):
 
     """
     Extract search result URLs from simplexml.
@@ -71,11 +88,7 @@ def extract_result_urls(xml):
     elements = tree.xpath("/search/results/subtitle/download")
 
     if len(elements) == 0:
-        raise Exception("no search result")
-        # FIXME nice error msg
-        #
-        # "maybe the movie has a subtitle stream?"
-        # print url for manual search
+        raise Exception("subtitle not found")
 
     url_list = map( lambda elem: elem.text, elements )
     logging.debug( "result_urls: {}".format(url_list) )
@@ -240,7 +253,7 @@ class UserAgent(object):
             extract_subtitles(
             self.get(
             best_result_url(
-            extract_result_urls(
+            extract_subtitle_urls(
             self.get(
             self.search_page_url(
                 language = language,

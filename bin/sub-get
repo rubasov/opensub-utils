@@ -98,6 +98,13 @@ def parse_cli_args():
         help = "increase verbosity (-v, -vv), optional",
         )
 
+    p.add_argument(
+        "-x", "--extract",
+        action = "store_true",
+        default = False,
+        help = "extract subtitles according to their names in archive, optional",
+        )
+
     p.add_argument("movie",
         nargs = "+",
         help = "video file (or files belonging to the same movie)",
@@ -130,40 +137,63 @@ def main():
         language = args.language,
         )
 
-    # name output files by --template
+    # name output files according to --template
     if not args.template is None:
 
         for idx, subtitle in enumerate(subtitle_list, start=1):
-
             _, ext = os.path.splitext(subtitle.name)
             assert ext != ""
             path = args.template.format(num=idx, ext=ext[1:])
-
             logging.debug("sub_path: {}".format(path))
+            subtitle.write(path=path)
 
+    # name output files as they were named in the archive
+    # ignore directories in the archive
+    elif args.extract:
+
+        for subtitle in subtitle_list:
+            path = os.path.basename(subtitle.name)
+            logging.debug("sub_path: {}".format(path))
             try:
-                subtitle.write(path=path)
+                subtitle.write_no_overwrite(path=path)
             except OSError as e:
                 if e.errno == errno.EEXIST:
+                    logging.debug(
+                        "cowardly refusing to overwrite file: {}".format(path))
                     pass
                 else:
                     raise
 
-    ## assumptions:
-    ##   * the user provided video files in "natural order"
-    ##   * subtitle_list is sorted by subtitle.name,
-    ##     therefore it is in "natural order"
-    #for video_file, subtitle in zip( args.movie, subtitle_list ):
+    # name output files to match video file names
+    # but with different extension: foo.avi -> foo.srt
+    else:
 
-    #    assert not video_file is None
-    #    assert not subtitle is None
+        # assumptions:
+        #   * the user provided video files in "natural order"
+        #   * subtitle_list is sorted by subtitle.name,
+        #     therefore it is in "natural order"
+        for video_file, subtitle in zip( args.movie, subtitle_list ):
 
-    #    base, _ = os.path.splitext(video_file)
-    #    _, extension = os.path.splitext(subtitle.name)
-    #    dest = base + extension
+            assert not video_file is None
+            assert not subtitle is None
 
-    #    logging.debug(
-    #        "extract_rename: {} -> {}".format(subtitle.name, dest) )
+            base, _ = os.path.splitext(video_file)
+            _, extension = os.path.splitext(subtitle.name)
+            path = base + extension
+
+            logging.debug(
+                "sub_path: {}".format(path) )
+
+            # FIXME duplicate code
+            try:
+                subtitle.write_no_overwrite(path=path)
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    logging.debug(
+                        "cowardly refusing to overwrite file: {}".format(path))
+                    pass
+                else:
+                    raise
 
 if __name__ == "__main__":
     main()

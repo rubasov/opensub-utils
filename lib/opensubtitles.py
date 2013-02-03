@@ -141,31 +141,6 @@ def path_has_subtitle_extension(path):
 
     return is_recognized
 
-def atomic_write(content, path, temp_prefix=".tmp-"):
-
-    with tempfile.NamedTemporaryFile(
-            mode = "wb",
-            prefix = temp_prefix,
-            delete = False,
-            dir = os.path.dirname(path),
-        ) as tmp:
-
-        tmp.write(content)
-        tmp.flush()
-        os.fsync(tmp.fileno())
-        tmp_name = tmp.name
-
-    try:
-        # FIXME os.link is unix-only
-        os.link(tmp_name, path)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            logging.warning(
-                "cowardly refusing to overwrite file: {}".format(path) )
-        raise
-    finally:
-        os.unlink(tmp_name)
-
 class Subtitle(object):
 
     def __init__(self, name, content):
@@ -173,8 +148,21 @@ class Subtitle(object):
         self.name = name
         self.content = content
 
+    def write_no_overwrite(self, path):
+
+        # FIXME this is unix-only
+        fd = os.open( path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644 )
+        with os.fdopen(fd, "w") as fo:
+            fo.write(self.content)
+            #fo.flush()
+            #os.fsync(fd)
+
     def write(self, path):
-        atomic_write( content = self.content, path = path )
+
+        with open(path, "w") as fo:
+            fo.write(self.content)
+            #fo.flush()
+            #os.fsync(fo.fileno())
 
 class UserAgent(object):
 

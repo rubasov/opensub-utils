@@ -60,7 +60,7 @@ def file_hash(file_to_hash):
 def movie_hash(file_list):
 
     """
-    Hash multi-CD movies by the first file, ignore the rest.
+    Hash a multi-CD movie by the first file, ignore the rest.
 
     Takes:
         file_list - list of video files belonging to the movie
@@ -91,7 +91,7 @@ def extract_subtitle_urls(xml):
         raise Exception("subtitle not found")
 
     url_list = map( lambda elem: elem.text, elements )
-    logging.debug( "result_urls: {}".format(url_list) )
+    logging.debug("result_urls: {}".format(url_list))
     return url_list
 
 def extract_subtitles(archive_content):
@@ -109,7 +109,7 @@ def extract_subtitles(archive_content):
         list of subtitles as Subtitle objects (order unspecified)
 
     Raises:
-        AssertionError - no subtitle in the archive
+        Exception - no subtitle in the archive
     """
 
     rv = list()
@@ -119,8 +119,9 @@ def extract_subtitles(archive_content):
         subtitle_names = filter(
             path_has_subtitle_extension, z.namelist() )
 
-        # FIXME more informative error message
-        assert len(subtitle_names) >= 1, "found no subtitle file in archive"
+        if len(subtitle_names) == 0:
+            # FIXME more informative error message
+            raise Exception("subtitle not found in archive")
 
         for name in subtitle_names:
             with z.open(name) as s:
@@ -134,6 +135,8 @@ def extract_subtitles(archive_content):
 def recognized_subtitle_extensions():
 
     """
+    Iterable of known subtitle extensions.
+
     http://trac.opensubtitles.org
           /projects/opensubtitles/wiki/DevReadFirst
           #Subtitlefilesextensions
@@ -143,9 +146,12 @@ def recognized_subtitle_extensions():
 
 def path_has_subtitle_extension(path):
 
+    """Path looks like the path of a subtitle."""
+
     base, extension = os.path.splitext(path)
 
-    assert extension != "", "path has no extension: {}".format(path)
+    if extension == "":
+        raise Exception("path has no extension: {}".format(path))
 
     if extension in recognized_subtitle_extensions():
         is_recognized = True
@@ -161,27 +167,46 @@ class Subtitle(object):
         self.name = name
         self.content = content
 
-    def write_no_overwrite(self, path):
+    def store(self, path, overwrite=False, suppress_eexist=True):
 
-        # FIXME this is unix-only
-        fd = os.open( path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644 )
-        with os.fdopen(fd, "w") as fo:
+        logging.info("store: {}".format(path))
+
+        def write(fo):
             fo.write(self.content)
-            #fo.flush()
-            #os.fsync(fd)
-
-    def write(self, path):
-
-        with open(path, "w") as fo:
-            fo.write(self.content)
+            # FIXME flush, sync
             #fo.flush()
             #os.fsync(fo.fileno())
 
+        if overwrite:
+
+            with open(path, "w") as fo:
+                write(fo)
+
+        else:
+
+            try:
+                # Open the file only if the open actually creates it,
+                # that is do not overwrite an existing file.
+                # FIXME unix only
+                fd = os.open(
+                    path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644 )
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    if suppress_eexist:
+                        logging.warning(
+                            "refusing to overwrite file: {}".format(path))
+                        pass
+                    else:
+                        raise
+                else:
+                    raise
+            else:
+                with os.fdopen(fd, "w") as fo:
+                    write(fo)
+
 class UserAgent(object):
 
-    """
-    Communicate with subtitle servers.
-    """
+    """Communicate with subtitle servers."""
 
     def __init__(self, server, user_agent):
         self.server = server
@@ -196,7 +221,7 @@ class UserAgent(object):
         self, movie_hash, language, cd_count=1, _fmt="simplexml"):
 
         """
-        Construct search page URL for simplexml format.
+        Construct search page URL.
 
         Takes:
             movie_hash - hash of movie (hex string)
@@ -234,7 +259,9 @@ class UserAgent(object):
 
         headers = {}
         headers["User-Agent"] = self.user_agent
-        if True: # dev mode
+
+        # FIXME dev mode
+        if True:
             headers["Cache-Control"] = "only-if-cached"
 
         req = urllib2.Request(url=url, headers=headers)
@@ -245,6 +272,22 @@ class UserAgent(object):
         return content
 
     def get_subtitle(self, movie, language):
+
+        """
+        Get subtitles of movie.
+
+        Query for subtitles of movie.
+        Download first search result.
+        Extract archive.
+        Return subtitle objects ordered by subtitle name.
+
+        Takes:
+            movie - list of video files belonging to movie ("natural order")
+            language - preferred language (ISO 639 code string)
+
+        Returns:
+            list of Subtitle objects (sorted by subtitle name)
+        """
 
         def best_result_url(lst):
             return lst[0]
@@ -261,12 +304,10 @@ class UserAgent(object):
                 cd_count = len(movie),
                 ))))))
 
-        video_file_count = len(movie)
-        subtitle_count = len(subtitle_list)
-        if video_file_count != subtitle_count:
+        if len(movie) != len(subtitle_list):
             raise Exception(
                 "unexpected number of subtitle files in archive: {}".format(
-                    subtitle_count ) )
+                    len(subtitle_list)))
 
         subtitle_list.sort( key = lambda obj: obj.name )
 

@@ -23,7 +23,7 @@ SUBTITLE FILE NAMING SCHEMES
 
         arguments      output files
         --             --
-        movie_cd1.avi  movie_cd1.srt (or .sub, .ass, whatever)
+        movie_cd1.avi  movie_cd1.srt (or .sub, .smi, whatever)
         movie_cd2.avi  movie_cd2.srt
         ...
 
@@ -36,7 +36,8 @@ SUBTITLE FILE NAMING SCHEMES
         {ext} Will be substituted by the subtitle extension
               as it was in the archive.
 
-        '--template /dev/stdout' writes the concatenated output to stdout.
+        '--template /dev/stdout --force'
+            writes the concatenated output to stdout.
 
     3) Extract the archive as it is: --extract.
 
@@ -45,6 +46,7 @@ SUBTITLE FILE NAMING SCHEMES
 
 OPTIONS
     FIXME
+    -f --force
     -l --language
     -s --server
     -t --template
@@ -76,9 +78,7 @@ TODO
                 preference order
                 validate language id
             --template-num-start, default=1
-        overwrite
-            refuse to do it by default
-            do it if asked explicitly
+        overwrite /dev/stdout
         upload to github
             ask for review by opensubtitles' folks
         documentation
@@ -90,6 +90,7 @@ TODO
         setup.py
         unit test suite
             if __name__ == "__main__": test()
+        __str__, __repr__
 """
 
 import argparse
@@ -106,9 +107,7 @@ import opensubtitles
 
 def setup_logging(verbosity):
 
-    """
-    Set log level and format.
-    """
+    """Procedure to set log level and format."""
 
     log_level_dict = {
         0: "WARNING",
@@ -131,11 +130,16 @@ def setup_logging(verbosity):
 
 def parse_cli_args():
 
-    """
-    Procedure for command line argument parsing.
-    """
+    """Procedure to parse command line arguments."""
 
     p = argparse.ArgumentParser()
+
+    p.add_argument(
+        "-f", "--force",
+        action = "store_true",
+        default = False,
+        help = "overwrite existing files",
+        )
 
     p.add_argument(
         "-l", "--language",
@@ -171,25 +175,69 @@ def parse_cli_args():
         help = "extract subtitles as named in the archive, optional",
         )
 
-    p.add_argument("movie",
+    p.add_argument(
+        "movie",
         nargs = "+",
         help = "video file (or files belonging to the same movie)",
         )
 
     return p.parse_args()
 
+def write_subtitle_files(args, subtitle_list):
+
+    """Procedure to write output files according to naming scheme."""
+
+    def ext_no_dot(path):
+
+        """Extension without leading dot."""
+
+        _, ext = os.path.splitext(subtitle.name)
+        if ext[1:] == "":
+            raise Exception("path has no extension: {}".format(path))
+        return ext[1:]
+
+    # naming scheme: use a template
+    if not args.template is None:
+
+        for idx, subtitle in enumerate(subtitle_list, start=1):
+            ext = ext_no_dot(subtitle.name)
+            dst = args.template.format(num=idx, ext=ext)
+            subtitle.store(path=dst, overwrite=args.force)
+
+    # naming scheme: extract archive
+    elif args.extract:
+
+        for subtitle in subtitle_list:
+            dst = os.path.basename(subtitle.name)
+            subtitle.store(path=dst, overwrite=args.force)
+
+    # naming scheme: match video file names
+    else:
+
+        # FIXME unchecked assumption
+        #
+        # the user provided video files in "natural order"
+
+        for video_file, subtitle in zip(args.movie, subtitle_list):
+            base = os.path.splitext(video_file)[0]
+            ext = ext_no_dot(subtitle.name)
+            dst = "{}.{}".format(base, ext)
+            subtitle.store(path=dst, overwrite=args.force)
+
+    return None
+
 def main():
 
     args = parse_cli_args()
-    setup_logging( verbosity = args.verbose )
+    setup_logging(verbosity=args.verbose)
 
     for video_file in args.movie:
         if not os.path.isfile(video_file):
             raise Exception( "no such file: {}".format(video_file) )
 
     def user_agent(
-        program = os.path.basename( sys.argv[0] ),
-        version = "0.9",
+        program = os.path.basename(sys.argv[0]),
+        version = "0.99",
         ):
         return "{}/{}".format(program, version)
 
@@ -203,63 +251,10 @@ def main():
         language = args.language,
         )
 
-    # name output files according to --template
-    if not args.template is None:
-
-        for idx, subtitle in enumerate(subtitle_list, start=1):
-            _, ext = os.path.splitext(subtitle.name)
-            assert ext != ""
-            path = args.template.format(num=idx, ext=ext[1:])
-            logging.debug("sub_path: {}".format(path))
-            subtitle.write(path=path)
-
-    # name output files as they were named in the archive
-    # ignore directories in the archive
-    elif args.extract:
-
-        for subtitle in subtitle_list:
-            path = os.path.basename(subtitle.name)
-            logging.debug("sub_path: {}".format(path))
-            try:
-                subtitle.write_no_overwrite(path=path)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    logging.debug(
-                        "cowardly refusing to overwrite file: {}".format(path))
-                    pass
-                else:
-                    raise
-
-    # name output files to match video file names
-    # but with different extension: foo.avi -> foo.srt
-    else:
-
-        # assumptions:
-        #   * the user provided video files in "natural order"
-        #   * subtitle_list is sorted by subtitle.name,
-        #     therefore it is in "natural order"
-        for video_file, subtitle in zip( args.movie, subtitle_list ):
-
-            assert not video_file is None
-            assert not subtitle is None
-
-            base, _ = os.path.splitext(video_file)
-            _, extension = os.path.splitext(subtitle.name)
-            path = base + extension
-
-            logging.debug(
-                "sub_path: {}".format(path) )
-
-            # FIXME duplicate code
-            try:
-                subtitle.write_no_overwrite(path=path)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    logging.debug(
-                        "cowardly refusing to overwrite file: {}".format(path))
-                    pass
-                else:
-                    raise
+    write_subtitle_files(
+        args = args,
+        subtitle_list = subtitle_list,
+        )
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,83 @@
+#! /usr/bin/python
+
+"""
+NAME
+    opensub-hash - print hash of video files
+
+SYNOPSIS
+    opensub-get [-h] VIDEO-FILE ...
+
+DESCRIPTION
+    Calculate and print hash of video files as used by opensubtitles.org.
+
+    Output is a hash-filename pair per line.
+
+    Keep in mind that the hash of a multi-file (multi-cd) movie is defined
+    as the hash of the first file (cd).
+
+OPTIONS
+    -h --help
+        Print short usage info.
+
+SEE ALSO
+    * pydoc opensub-get
+    * http://www.opensubtitles.org/
+
+LICENSE
+    FIXME
+
+CREDITS
+    Copyright 2013 Bence Romsics <rubasov@gmail.com>
+"""
+
+import argparse
+import errno
+import os
+import sys
+
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "..",
+        "lib"))
+
+import opensubtitles
+
+
+def parse_cli_args():
+
+    """Procedure to parse command line arguments."""
+
+    p = argparse.ArgumentParser()
+
+    p.add_argument(
+        "video_file",
+        nargs="+",
+        help="video file(s)",
+        )
+
+    return p.parse_args()
+
+
+def main():
+
+    args = parse_cli_args()
+    ev = 0
+
+    for path in args.video_file:
+        try:
+            print "{} {}".format(opensubtitles.file_hash(path=path), path)
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                sys.stdout.flush()
+                sys.stderr.write("no such file: {}\n".format(path))
+                ev = 1
+                pass
+            else:
+                raise
+
+    sys.exit(ev)
+
+
+if __name__ == "__main__":
+    main()

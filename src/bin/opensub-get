@@ -1,0 +1,328 @@
+#! /usr/bin/python
+
+"""
+NAME
+    opensub-get - download subtitle for a movie from opensubtitles.org
+
+SYNOPSIS
+    opensub-get [-h] [-v|-vv] [-l lang] [...] MOVIE-FILE [MOVIE-FILE-CD2 ...]
+
+DESCRIPTION
+    Using the hash of video files query opensubtitles.org.
+    Download a subtitle archive and extract the subtitles.
+
+SUBTITLE FILE NAMING SCHEMES
+    1) Default: to match video file names.
+
+        This mode assembles the output file name from:
+
+        * the video file name minus its extension
+        * the subtitle extension as in the archive
+
+        Example:
+
+        arguments      output files
+        --             --
+        movie_cd1.avi  movie_cd1.srt (or .sub, .smi, whatever)
+        movie_cd2.avi  movie_cd2.srt
+        ...
+
+    2) Use a template: --template 'foo-{num}.{ext}'.
+
+        {num} Will be substituted by a running index of subtitle files.
+              Doesn't make much sense unless you have multiple subtitle
+              files. Starts counting from 1.
+
+        {ext} Will be substituted by the subtitle extension
+              as it was in the archive.
+
+        '--template /dev/stdout --force'
+            writes the concatenated output to stdout.
+
+    3) Extract the archive as it is: --extract.
+
+        Keep the subtitle file names as they are in the archive,
+        but chop the leading directories if there's any.
+
+OPTIONS
+    -f --force
+        Overwrite existing files when producing creating output files.
+
+    -h --help
+        Print this help message and exit.
+
+    -l --language
+        ISO 639 code of subtitle language. Default: eng.
+
+    -s --server
+        Subtitle server. Default: www.opensubtitles.org.
+
+    -t --template
+        Name output files according to template. See NAMING SCHEMES.
+
+    -v --verbose
+        Increase verbosity. May be used twice (-vv).
+
+    -x --extract
+        Extract output files as they are. See NAMING SCHEMES.
+
+ENVIRONMENT VARIABLES
+    http_proxy=proxy:port - for details see Python's urrlib2
+
+SEE ALSO
+    Search by movie title and other search options:
+        http://www.opensubtitles.org/search/
+
+    Subtitle upload:
+        http://www.opensubtitles.org/upload/
+
+LICENSE
+    FIXME
+
+CREDITS
+    Many thanks to opensubtitles.org's folks for their great service.
+    Copyright 2013 Bence Romsics <rubasov@gmail.com>
+
+TODO
+    functional
+        file argument clustering
+        opensub-mget
+            find . -maxdepth 1 -name '*.avi' -print0
+                | xargs -0 -n1 ~/src/python2/opensub-get/src/bin/opensub-get
+        select 2nd, 3rd, etc. search result
+        parameters
+            --template - 
+                --template /dev/stdout --force
+            --template {base}.{ext}
+            --language lang1,lang2,...
+                preference order
+                validate language id
+        proper exit value
+        upload to github
+            ask for review by opensubtitles folks
+        license
+    development practice
+        python2/3 compatibility
+        unix/windows portability
+        setup.py
+        unit test suite
+            if __name__ == "__main__": test()
+"""
+
+import argparse
+import errno
+import logging
+import os
+import sys
+
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        "..",
+        "lib"))
+
+import opensubtitles
+
+
+def setup_logging(verbosity):
+
+    """Procedure to set log level and format."""
+
+    log_level_dict = {
+        0: "WARNING",
+        1: "INFO",
+        2: "DEBUG",
+        }
+
+    try:
+        log_level = getattr(logging, log_level_dict[verbosity])
+    except KeyError:
+        raise Exception(
+            "invalid log level: -{}".format("v" * verbosity))
+
+    logging.basicConfig(
+        level=log_level,
+        format="%(levelname)s: %(filename)s:%(lineno)d: %(message)s",
+        )
+
+    return None
+
+
+def parse_cli_args():
+
+    """Procedure to parse command line arguments."""
+
+    p = argparse.ArgumentParser()
+
+    p.add_argument(
+        "-f", "--force",
+        action="store_true",
+        default=False,
+        help="overwrite existing files",
+        )
+
+    p.add_argument(
+        "-l", "--language",
+        action="store",
+        default="eng",
+        help="subtitle language id (ISO 639), default: eng",
+        )
+
+    p.add_argument(
+        "-s", "--server",
+        action="store",
+        default="www.opensubtitles.org",
+        help="server to query, default: www.opensubtitles.org",
+        )
+
+    p.add_argument(
+        "-t", "--template",
+        action="store",
+        help="name output files like: 'template-{num}.{ext}', optional",
+        )
+
+    p.add_argument(
+        "-v", "--verbose",
+        action="count",
+        default=0,
+        help="increase verbosity (-v, -vv), optional",
+        )
+
+    p.add_argument(
+        "-x", "--extract",
+        action="store_true",
+        default=False,
+        help="extract subtitles as named in the archive, optional",
+        )
+
+    p.add_argument(
+        "movie",
+        nargs="+",
+        help="video file (or files belonging to the same movie)",
+        )
+
+    args = p.parse_args()
+    return args
+
+
+def store(content, path, overwrite=False, suppress_eexist=True):
+
+    """
+    Write content to file at path.
+
+    Takes:
+        content - content to be written
+        path - path to open and write to
+        overwrite - allow/disallow to overwrite existing files (boolean)
+        suppress_eexist - turn overwrite exception into a warning (boolean)
+    """
+
+    logging.info("store: {}".format(path))
+
+    if overwrite:
+
+        with open(path, "w") as fo:
+            fo.write(content)
+
+    else:
+
+        try:
+            # Open the file only if the open actually creates it,
+            # that is do not overwrite an existing file.
+            # FIXME unix only
+            fd = os.open(
+                path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                if suppress_eexist:
+                    logging.warning(
+                        "refusing to overwrite file: {}".format(path))
+                    pass
+                else:
+                    raise
+            else:
+                raise
+        else:
+            with os.fdopen(fd, "w") as fo:
+                fo.write(content)
+
+    return None
+
+
+def write_subtitle_files(args, subtitle_list):
+
+    """Procedure to write output files according to naming scheme."""
+
+    def ext_no_dot(path):
+
+        """Extension without leading dot."""
+
+        ext = os.path.splitext(subtitle.name)[1]
+        if ext[1:] == "":
+            raise Exception("path has no extension: {}".format(path))
+        return ext[1:]
+
+    # naming scheme: use a template
+    if not args.template is None:
+
+        # maybe FIXME option to override start=1
+        for idx, subtitle in enumerate(subtitle_list, start=1):
+            ext = ext_no_dot(subtitle.name)
+            dst = args.template.format(num=idx, ext=ext)
+            store(content=subtitle.content, path=dst, overwrite=args.force)
+
+    # naming scheme: extract archive
+    elif args.extract:
+
+        for subtitle in subtitle_list:
+            dst = os.path.basename(subtitle.name)
+            store(content=subtitle.content, path=dst, overwrite=args.force)
+
+    # naming scheme: match video file names
+    else:
+
+        # FIXME unchecked assumption
+        #
+        # the user provided video files in "natural order"
+
+        for video_file, subtitle in zip(args.movie, subtitle_list):
+            base = os.path.splitext(video_file)[0]
+            ext = ext_no_dot(subtitle.name)
+            dst = "{}.{}".format(base, ext)
+            store(content=subtitle.content, path=dst, overwrite=args.force)
+
+    return None
+
+
+def main():
+
+    args = parse_cli_args()
+    setup_logging(verbosity=args.verbose)
+
+    for video_file in args.movie:
+        if not os.path.isfile(video_file):
+            raise Exception("no such file: {}".format(video_file))
+
+    def user_agent(
+        program=os.path.basename(sys.argv[0]),
+        version="0.99",
+        ):
+        return "{}/{}".format(program, version)
+
+    ua = opensubtitles.UserAgent(
+        server=args.server,
+        user_agent=user_agent(),
+        )
+
+    subtitle_list = ua.get_subtitle(
+        movie=args.movie,
+        language=args.language,
+        )
+
+    write_subtitle_files(
+        args=args,
+        subtitle_list=subtitle_list,
+        )
+
+if __name__ == "__main__":
+    main()

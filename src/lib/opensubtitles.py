@@ -1,6 +1,5 @@
 #! /usr/bin/python
 
-import errno
 import logging
 import os
 import StringIO
@@ -8,12 +7,10 @@ import struct
 import sys
 import tempfile
 import urllib2
-import urlparse
+import xml.etree.ElementTree as etree
 import zipfile
 
-from lxml import etree
-
-def file_hash(file_to_hash):
+def file_hash(path):
 
     """
     Hash a file.
@@ -22,7 +19,7 @@ def file_hash(file_to_hash):
     http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
     Takes:
-        file_to_hash - path of the file
+        path - path of the file
 
     Returns:
         hex string of hash
@@ -33,29 +30,30 @@ def file_hash(file_to_hash):
 
     def chunk_hash(f, hash_value):
 
-        fmt = "q" # long long
+        fmt = "q"  # long long
         bufsize = struct.calcsize(fmt)
 
-        for _ in range( 64 * 1024 / bufsize ):
+        for _ in range(64 * 1024 / bufsize):
             buf = f.read(bufsize)
             hash_value += struct.unpack(fmt, buf)[0]
-            hash_value &= 0xFFFFFFFFFFFFFFFF # to remain as 64 bit number
+            hash_value &= 0xFFFFFFFFFFFFFFFF  # to remain as 64 bit number
 
         return hash_value
 
-    filesize = os.path.getsize(file_to_hash)
+    filesize = os.path.getsize(path)
     if filesize < 2 * 64 * 1024:
-        raise Exception( "file too small: < 128 KiB" )
+        raise Exception("file too small: < 128 KiB")
 
     hash_value = filesize
-    with open(file_to_hash, "rb") as f:
+    with open(path, "rb") as f:
         hash_value = chunk_hash(f, hash_value)
-        f.seek( max( 0, filesize - 64 * 1024 ), 0 )
+        f.seek(max(0, filesize - 64 * 1024), 0)
         hash_value = chunk_hash(f, hash_value)
 
     hex_string = "{:016x}".format(hash_value)
-    logging.debug( "hash: {}".format(hex_string) )
+    logging.info("hash: {}".format(hex_string))
     return hex_string
+
 
 def movie_hash(file_list):
 
@@ -69,8 +67,9 @@ def movie_hash(file_list):
         hex string of hash
     """
 
-    movie_hash = file_hash( file_list[0] )
+    movie_hash = file_hash(file_list[0])
     return movie_hash
+
 
 def extract_subtitle_urls(xml):
 
@@ -84,15 +83,17 @@ def extract_subtitle_urls(xml):
         list of search result URLs (same order as in xml)
     """
 
-    tree = etree.fromstring(xml)
-    elements = tree.xpath("/search/results/subtitle/download")
+    search_element = etree.fromstring(xml)
+    # absolute xpath: /search/results/subtitle/download
+    elements = search_element.findall("./results/subtitle/download")
 
     if len(elements) == 0:
         raise Exception("subtitle not found")
 
-    url_list = map( lambda elem: elem.text, elements )
-    logging.debug("result_urls: {}".format(url_list))
+    url_list = map(lambda elem: elem.text, elements)
+    logging.debug("search_result_urls: {}".format(url_list))
     return url_list
+
 
 def extract_subtitles(archive_content):
 
@@ -109,28 +110,28 @@ def extract_subtitles(archive_content):
         list of subtitles as Subtitle objects (order unspecified)
 
     Raises:
-        Exception - no subtitle in the archive
+        Exception - subtitle not found in archive
     """
 
-    rv = list()
+    subtitle_list = list()
 
-    with zipfile.ZipFile( StringIO.StringIO(archive_content) ) as z:
+    with zipfile.ZipFile(StringIO.StringIO(archive_content)) as z:
+
+        logging.debug("archive_content: {}".format(z.namelist()))
 
         subtitle_names = filter(
-            path_has_subtitle_extension, z.namelist() )
+            path_has_subtitle_extension, z.namelist())
 
         if len(subtitle_names) == 0:
-            # FIXME more informative error message
             raise Exception("subtitle not found in archive")
 
         for name in subtitle_names:
             with z.open(name) as s:
-                rv.append(
-                    Subtitle(
-                        name = name,
-                        content = s.read() ) )
+                subtitle_list.append(
+                    Subtitle(name=name, content=s.read()))
 
-    return rv
+    return subtitle_list
+
 
 def recognized_subtitle_extensions():
 
@@ -144,14 +145,12 @@ def recognized_subtitle_extensions():
 
     return set([".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"])
 
+
 def path_has_subtitle_extension(path):
 
     """Path looks like the path of a subtitle."""
 
     base, extension = os.path.splitext(path)
-
-    if extension == "":
-        raise Exception("path has no extension: {}".format(path))
 
     if extension in recognized_subtitle_extensions():
         is_recognized = True
@@ -160,57 +159,41 @@ def path_has_subtitle_extension(path):
 
     return is_recognized
 
+
 class Subtitle(object):
+
+    """Subtitle struct."""
 
     def __init__(self, name, content):
 
         self.name = name
         self.content = content
 
-    def store(self, path, overwrite=False, suppress_eexist=True):
+    def __repr__(self):
 
-        logging.info("store: {}".format(path))
+        return "{}({!r})".format(self.__class__, self.__dict__)
 
-        def write(fo):
-            fo.write(self.content)
-            # FIXME flush, sync
-            #fo.flush()
-            #os.fsync(fo.fileno())
+    def __str__(self):
 
-        if overwrite:
+        return "{}({!r})".format(self.__class__, self.name)
 
-            with open(path, "w") as fo:
-                write(fo)
-
-        else:
-
-            try:
-                # Open the file only if the open actually creates it,
-                # that is do not overwrite an existing file.
-                # FIXME unix only
-                fd = os.open(
-                    path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644 )
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    if suppress_eexist:
-                        logging.warning(
-                            "refusing to overwrite file: {}".format(path))
-                        pass
-                    else:
-                        raise
-                else:
-                    raise
-            else:
-                with os.fdopen(fd, "w") as fo:
-                    write(fo)
 
 class UserAgent(object):
 
     """Communicate with subtitle servers."""
 
     def __init__(self, server, user_agent):
+
         self.server = server
         self.user_agent = user_agent
+
+    def __repr__(self):
+
+        return "{}({!r})".format(self.__class__, self.__dict__)
+
+    def __str__(self):
+
+        return "{}({!r})".format(self.__class__, self.server)
 
     # maybe FIXME encode urls
     #
@@ -227,13 +210,13 @@ class UserAgent(object):
             movie_hash - hash of movie (hex string)
                 cf. movie_hash()
             language - subtitle language according to ISO 639 (string)
-            cd_count - how many files make up the movie?
+            cd_count - how many video files make up the movie?
 
         Returns:
             search page URL
         """
 
-        url = ( "http://"
+        url = ("http://"
             + self.server
             + "/en"
             + "/search"
@@ -242,7 +225,7 @@ class UserAgent(object):
             + "/subsumcd-{}".format(cd_count)
             + "/{}".format(_fmt)
             )
-        logging.debug( "search_page_url: {}".format(url) )
+        logging.debug("search_page_url: {}".format(url))
         return url
 
     def get(self, url):
@@ -260,9 +243,13 @@ class UserAgent(object):
         headers = {}
         headers["User-Agent"] = self.user_agent
 
-        # FIXME dev mode
-        if True:
+        # This is a hack for less intrusive testing. Do not rely on it ever.
+        # $ magic=more http_proxy=127.0.0.1:8123 program ...
+        if "magic" in os.environ:
+            logging.warning("env(magic) present, anything may happen")
             headers["Cache-Control"] = "only-if-cached"
+
+        logging.debug("http_get: {}".format(url))
 
         req = urllib2.Request(url=url, headers=headers)
         stream = urllib2.urlopen(req)
@@ -299,9 +286,9 @@ class UserAgent(object):
             extract_subtitle_urls(
             self.get(
             self.search_page_url(
-                language = language,
-                movie_hash = movie_hash(movie),
-                cd_count = len(movie),
+                language=language,
+                movie_hash=movie_hash(movie),
+                cd_count=len(movie),
                 ))))))
 
         if len(movie) != len(subtitle_list):
@@ -309,6 +296,6 @@ class UserAgent(object):
                 "unexpected number of subtitle files in archive: {}".format(
                     len(subtitle_list)))
 
-        subtitle_list.sort( key = lambda obj: obj.name )
+        subtitle_list.sort(key=lambda obj: obj.name)
 
         return subtitle_list

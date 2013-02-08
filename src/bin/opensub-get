@@ -103,10 +103,7 @@ TODO
         license
     development practice
         python2/3 compatibility
-        unix/windows portability
         setup.py
-        unit test suite
-            if __name__ == "__main__": test()
 """
 
 import argparse

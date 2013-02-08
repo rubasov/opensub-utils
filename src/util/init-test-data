@@ -7,9 +7,7 @@ then
     echo "    the test suite depends on the data gathered by this script"
 fi
 
-exit 0
-
-set -e
+#set -e
 set -u
 
 wget="wget --no-clobber --tries=1 --quiet"
@@ -26,5 +24,8 @@ $wget --output-document=no-results-simplexml.xml \
 
 $wget --output-document=search-results-simplexml.xml \
     http://www.opensubtitles.org/en/search/imdbid-56119/sublanguageid-eng/simplexml
+
+$wget --output-document=4130212.zip \
+    http://dl.opensubtitles.org/en/download/subad/4130212
 
 touch empty.avi

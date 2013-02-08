@@ -67,10 +67,20 @@ class OpensubtitlesTestCase(unittest.TestCase):
             opensubtitles.extract_subtitle_urls,
             StringIO.StringIO("<<junk>>"))
 
-    # TODO further tests
-    #
-    # test__extract_subtitles__*
-    # test__UserAgent.*
+    def test__extract_subtitles__4130212_zip(self):
+
+        expected = [
+            "Birdman of Alcatraz - 1.srt",
+            "Birdman of Alcatraz - 2.srt",
+            ]
+
+        test_file = os.path.join(self.test_data_dir, "4130212.zip")
+        with open(test_file, "r") as z:
+            subtitle_list = opensubtitles.extract_subtitles(
+                zip_content=z.read())
+            subtitle_names = [s.name for s in subtitle_list]
+
+        self.assertEqual(subtitle_names, expected)
 
 
 if __name__ == "__main__":

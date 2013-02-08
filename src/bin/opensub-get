@@ -118,7 +118,9 @@ import urllib2
 
 sys.path.append(
     os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
+        os.path.dirname(
+            os.path.realpath(
+                __file__)),
         "..",
         "lib"))
 
@@ -260,7 +262,7 @@ def write_subtitle_files(args, subtitle_list):
 
         """Extension without leading dot."""
 
-        ext = os.path.splitext(subtitle.name)[1]
+        ext = os.path.splitext(path)[1]
         if ext[1:] == "":
             raise Exception("path has no extension: {}".format(path))
         return ext[1:]

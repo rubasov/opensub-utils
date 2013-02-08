@@ -95,7 +95,11 @@ def extract_subtitle_urls(xml):
     return url_list
 
 
-def extract_subtitles(archive_content):
+def extract_subtitles(
+    archive_content,
+    extensions = set(
+        [".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"])
+    ):
 
     """
     Extract all subtitle files from subtitle zip archive.
@@ -103,8 +107,13 @@ def extract_subtitles(archive_content):
     Ignore anything else in the archive (e.g. .nfo files).
     Store everything in memory, write nothing to the file system.
 
+    Source of recognized extension list:
+        http://trac.opensubtitles.org/projects/opensubtitles
+            /wiki/DevReadFirst#Subtitlefilesextensions
+
     Takes:
         archive_content - zip archive content as a string
+        extensions - iterable of recognized subtitle extensions
 
     Returns:
         list of subtitles as Subtitle objects (order unspecified)
@@ -113,51 +122,22 @@ def extract_subtitles(archive_content):
         Exception - subtitle not found in archive
     """
 
-    subtitle_list = list()
-
     with zipfile.ZipFile(StringIO.StringIO(archive_content)) as z:
 
         logging.debug("archive_content: {}".format(z.namelist()))
 
-        subtitle_names = filter(
-            path_has_subtitle_extension, z.namelist())
+        subtitle_list = list()
+        for name in z.namelist():
+            ext = os.path.splitext(name)[1]
+            if ext in extensions:
+                with z.open(name) as s:
+                    subtitle_list.append(
+                        Subtitle(name=name, content=s.read()))
 
-        if len(subtitle_names) == 0:
+        if len(subtitle_list) == 0:
             raise Exception("subtitle not found in archive")
 
-        for name in subtitle_names:
-            with z.open(name) as s:
-                subtitle_list.append(
-                    Subtitle(name=name, content=s.read()))
-
     return subtitle_list
-
-
-def recognized_subtitle_extensions():
-
-    """
-    Iterable of known subtitle extensions.
-
-    http://trac.opensubtitles.org
-          /projects/opensubtitles/wiki/DevReadFirst
-          #Subtitlefilesextensions
-    """
-
-    return set([".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"])
-
-
-def path_has_subtitle_extension(path):
-
-    """Path looks like the path of a subtitle."""
-
-    base, extension = os.path.splitext(path)
-
-    if extension in recognized_subtitle_extensions():
-        is_recognized = True
-    else:
-        is_recognized = False
-
-    return is_recognized
 
 
 class Subtitle(object):

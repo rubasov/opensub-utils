@@ -5,7 +5,6 @@ import os
 import StringIO
 import struct
 import sys
-import tempfile
 import urllib2
 import xml.etree.ElementTree as etree
 import zipfile

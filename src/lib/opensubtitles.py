@@ -101,6 +101,26 @@ def extract_subtitle_urls(xml_file_object):
     return url_list
 
 
+# TODO rewrite to NamedFile()
+# maybe store StringIO file-like object instead of content?
+class Subtitle(object):
+
+    """Subtitle struct."""
+
+    def __init__(self, name, content):
+
+        self.name = name
+        self.content = content
+
+    def __repr__(self):
+
+        return "{}({!r})".format(self.__class__, self.__dict__)
+
+    def __str__(self):
+
+        return "{}({!r})".format(self.__class__, self.name)
+
+
 # TODO rewrite to extract_by_extension()
 # NOTE zipfile.ZipFile requires a seekable file handle.
 #      File-like objects returned by urlopen are not seekable.
@@ -148,26 +168,6 @@ def extract_subtitles(
             raise Exception("subtitle not found in archive")
 
     return subtitle_list
-
-
-# TODO rewrite to NamedFile()
-# maybe store StringIO file-like object instead of content?
-class Subtitle(object):
-
-    """Subtitle struct."""
-
-    def __init__(self, name, content):
-
-        self.name = name
-        self.content = content
-
-    def __repr__(self):
-
-        return "{}({!r})".format(self.__class__, self.__dict__)
-
-    def __str__(self):
-
-        return "{}({!r})".format(self.__class__, self.name)
 
 
 class UserAgent(object):

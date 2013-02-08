@@ -40,11 +40,17 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
     def test__extract_subtitle_urls__found(self):
 
-        expected = map(
-            "http://dl.opensubtitles.org/en/download/subad/{}".format,
-                ["4783694", "4651408", "4617272",
-                "4504568", "3650786", "3562667",
-                "93050", "130331", "141364"])
+        expected = [
+            "http://dl.opensubtitles.org/en/download/subad/4783694",
+            "http://dl.opensubtitles.org/en/download/subad/4651408",
+            "http://dl.opensubtitles.org/en/download/subad/4617272",
+            "http://dl.opensubtitles.org/en/download/subad/4504568",
+            "http://dl.opensubtitles.org/en/download/subad/3650786",
+            "http://dl.opensubtitles.org/en/download/subad/3562667",
+            "http://dl.opensubtitles.org/en/download/subad/93050",
+            "http://dl.opensubtitles.org/en/download/subad/130331",
+            "http://dl.opensubtitles.org/en/download/subad/141364",
+            ]
 
         test_file = os.path.join(
             self.test_data_dir, "search-results-simplexml.xml")

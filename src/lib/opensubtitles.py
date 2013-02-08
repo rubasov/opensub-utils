@@ -10,6 +10,7 @@ import urllib2
 import xml.etree.ElementTree as etree
 import zipfile
 
+
 def file_hash(path):
 
     """
@@ -106,7 +107,7 @@ def extract_subtitle_urls(xml_file_object):
 #      So we must take the whole archive content.
 def extract_subtitles(
     zip_content,
-    extensions = set(
+    extensions=set(
         [".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"])
     ):
 

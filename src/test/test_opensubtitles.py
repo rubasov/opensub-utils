@@ -42,9 +42,9 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
         expected = map(
             "http://dl.opensubtitles.org/en/download/subad/{}".format,
-                [ "4783694", "4651408", "4617272",
+                ["4783694", "4651408", "4617272",
                 "4504568", "3650786", "3562667",
-                "93050", "130331", "141364", ])
+                "93050", "130331", "141364"])
 
         test_file = os.path.join(
             self.test_data_dir, "search-results-simplexml.xml")

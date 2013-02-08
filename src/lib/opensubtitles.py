@@ -95,6 +95,7 @@ def extract_subtitle_urls(xml):
     return url_list
 
 
+# TODO rewrite to extract_by_extension()
 def extract_subtitles(
     archive_content,
     extensions = set(
@@ -140,6 +141,8 @@ def extract_subtitles(
     return subtitle_list
 
 
+# TODO rewrite to NamedFile()
+# maybe store StringIO file-like object instead of content?
 class Subtitle(object):
 
     """Subtitle struct."""
@@ -236,6 +239,7 @@ class UserAgent(object):
         content = stream.read()
         stream.close()
 
+        # TODO return file-like object
         return content
 
     def get_subtitle(self, movie, language):

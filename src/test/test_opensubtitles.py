@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
 import os
+import StringIO
 import sys
 import unittest
 
@@ -48,7 +49,7 @@ class OpensubtitlesTestCase(unittest.TestCase):
         test_file = os.path.join(
             self.test_data_dir, "search-results-simplexml.xml")
         with open(test_file, "r") as f:
-            result_urls = opensubtitles.extract_subtitle_urls(f.read())
+            result_urls = opensubtitles.extract_subtitle_urls(f)
 
         self.assertEqual(result_urls, expected)
 
@@ -58,12 +59,13 @@ class OpensubtitlesTestCase(unittest.TestCase):
             self.test_data_dir, "no-results-simplexml.xml")
         with open(test_file, "r") as f:
             self.assertRaises(Exception,
-                opensubtitles.extract_subtitle_urls, f.read())
+                opensubtitles.extract_subtitle_urls, f)
 
     def test__extract_subtitle_urls__malformed_xml(self):
 
         self.assertRaises(Exception,
-            opensubtitles.extract_subtitle_urls, "<<junk>>")
+            opensubtitles.extract_subtitle_urls,
+            StringIO.StringIO("<<junk>>"))
 
     # TODO further tests
     #

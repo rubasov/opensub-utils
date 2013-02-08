@@ -71,21 +71,26 @@ def movie_hash(file_list):
     return movie_hash
 
 
-def extract_subtitle_urls(xml):
+def extract_subtitle_urls(xml_file_object):
 
     """
     Extract search result URLs from simplexml.
 
     Takes:
-        xml - xml string
+        xml - file-like object of simplexml search results
 
     Returns:
         list of search result URLs (same order as in xml)
     """
 
-    search_element = etree.fromstring(xml)
-    # absolute xpath: /search/results/subtitle/download
-    elements = search_element.findall("./results/subtitle/download")
+    tree = etree.parse(xml_file_object)
+
+    # FIXME use absolute xpath: /search/results/subtitle/download
+    #
+    # findall with an absolute xpath is broken in xml.etree.Elementree 1.3.0
+    # I couldn't find the issue on bugs.python.org, but here is the code
+    # issuing the warning: /usr/lib/python2.7/xml/etree/ElementTree.py:745
+    elements = tree.findall("./results/subtitle/download")
 
     if len(elements) == 0:
         raise Exception("subtitle not found")
@@ -96,8 +101,11 @@ def extract_subtitle_urls(xml):
 
 
 # TODO rewrite to extract_by_extension()
+# NOTE zipfile.ZipFile requires a seekable file handle.
+#      File-like objects returned by urlopen are not seekable.
+#      So we must take the whole archive content.
 def extract_subtitles(
-    archive_content,
+    zip_content,
     extensions = set(
         [".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"])
     ):
@@ -113,7 +121,7 @@ def extract_subtitles(
             /wiki/DevReadFirst#Subtitlefilesextensions
 
     Takes:
-        archive_content - zip archive content as a string
+        zip_content - zip archive content as a string
         extensions - iterable of recognized subtitle extensions
 
     Returns:
@@ -123,9 +131,9 @@ def extract_subtitles(
         Exception - subtitle not found in archive
     """
 
-    with zipfile.ZipFile(StringIO.StringIO(archive_content)) as z:
+    with zipfile.ZipFile(StringIO.StringIO(zip_content)) as z:
 
-        logging.debug("archive_content: {}".format(z.namelist()))
+        logging.debug("files_in_archive: {}".format(z.namelist()))
 
         subtitle_list = list()
         for name in z.namelist():
@@ -165,10 +173,10 @@ class UserAgent(object):
 
     """Communicate with subtitle servers."""
 
-    def __init__(self, server, user_agent):
+    def __init__(self, server, opener=urllib2.build_opener()):
 
         self.server = server
-        self.user_agent = user_agent
+        self.opener = opener
 
     def __repr__(self):
 
@@ -211,37 +219,6 @@ class UserAgent(object):
         logging.debug("search_page_url: {}".format(url))
         return url
 
-    def get(self, url):
-
-        """
-        Wrap HTTP GET.
-
-        Takes:
-            url - URL to get
-
-        Returns:
-            content of resource at URL
-        """
-
-        headers = {}
-        headers["User-Agent"] = self.user_agent
-
-        # This is a hack for less intrusive testing. Do not rely on it ever.
-        # $ magic=more http_proxy=127.0.0.1:8123 program ...
-        if "magic" in os.environ:
-            logging.warning("env(magic) present, anything may happen")
-            headers["Cache-Control"] = "only-if-cached"
-
-        logging.debug("http_get: {}".format(url))
-
-        req = urllib2.Request(url=url, headers=headers)
-        stream = urllib2.urlopen(req)
-        content = stream.read()
-        stream.close()
-
-        # TODO return file-like object
-        return content
-
     def get_subtitle(self, movie, language):
 
         """
@@ -260,20 +237,23 @@ class UserAgent(object):
             list of Subtitle objects (sorted by subtitle name)
         """
 
-        def best_result_url(lst):
+        def best(lst):
             return lst[0]
 
-        subtitle_list = \
-            extract_subtitles(
-            self.get(
-            best_result_url(
+        subtitle_archive_url = best(
             extract_subtitle_urls(
-            self.get(
+            self.opener.open(
             self.search_page_url(
                 language=language,
                 movie_hash=movie_hash(movie),
                 cd_count=len(movie),
-                ))))))
+                ))))
+
+        zip_fo = self.opener.open(subtitle_archive_url)
+        zip_content = zip_fo.read()
+        zip_fo.close()
+
+        subtitle_list = extract_subtitles(zip_content=zip_content)
 
         if len(movie) != len(subtitle_list):
             raise Exception(

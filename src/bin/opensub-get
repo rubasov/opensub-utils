@@ -114,6 +114,7 @@ import errno
 import logging
 import os
 import sys
+import urllib2
 
 sys.path.append(
     os.path.join(
@@ -122,6 +123,8 @@ sys.path.append(
         "lib"))
 
 import opensubtitles
+
+__version__ = "0.99"
 
 
 def setup_logging(verbosity):
@@ -303,15 +306,24 @@ def main():
         if not os.path.isfile(video_file):
             raise Exception("no such file: {}".format(video_file))
 
-    def user_agent(
-        program=os.path.basename(sys.argv[0]),
-        version="0.99",
-        ):
-        return "{}/{}".format(program, version)
+    user_agent = "{}/{}".format(
+        os.path.basename(sys.argv[0]), __version__)
+
+    headers = list()
+    headers.append(("User-Agent", user_agent))
+
+    # This is a hack for less intrusive testing. Do not rely on it ever.
+    # $ magic=more http_proxy=127.0.0.1:8123 program ...
+    if "magic" in os.environ:
+        logging.warning("env(magic) present, anything may happen")
+        headers.append(("Cache-Control", "only-if-cached"))
+
+    opener = urllib2.build_opener()
+    opener.addheaders = headers
 
     ua = opensubtitles.UserAgent(
         server=args.server,
-        user_agent=user_agent(),
+        opener=opener,
         )
 
     subtitle_list = ua.get_subtitle(

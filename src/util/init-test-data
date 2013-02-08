@@ -1,0 +1,30 @@
+#! /bin/sh
+
+if [ $# -eq 1 -a \( "$1" = "-h" -o "$1" = "--help" \) ]
+then
+    echo "usage: $0"
+    echo "    download and/or generate test data"
+    echo "    the test suite depends on the data gathered by this script"
+fi
+
+exit 0
+
+set -e
+set -u
+
+wget="wget --no-clobber --tries=1 --quiet"
+
+cd "$( dirname "$0" )/../test/test-data"
+
+# http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+$wget \
+    http://www.opensubtitles.org/addons/avi/breakdance.avi
+
+# nonexistent imdbid
+$wget --output-document=no-results-simplexml.xml \
+    http://www.opensubtitles.org/en/search/imdbid-0/sublanguageid-eng/simplexml
+
+$wget --output-document=search-results-simplexml.xml \
+    http://www.opensubtitles.org/en/search/imdbid-56119/sublanguageid-eng/simplexml
+
+touch empty.avi

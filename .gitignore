@@ -1,4 +1,7 @@
 *~
 .*.swp
+
 *.pyc
-test-data/
+__pycache__/
+
+src/test/test-data/

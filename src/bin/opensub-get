@@ -39,7 +39,7 @@ Options:
 
 __doc_rest__ = """
 Description:
-    opensub-get - Download subtitle for a movie from opensubtitles.org.
+    opensub-get - Download subtitles for a movie from opensubtitles.org.
 
     Do you hunt for subtitles based on movie title, file name, file size,
     frame rate? Do you still adjust the subtitle delay and frame rate
@@ -92,6 +92,17 @@ Subtitle File Naming Schemes:
 Environment Variables:
     http_proxy=proxy:port - For details see Python's urrlib2.
 
+Known Limitations:
+    Can't handle more than one movie at a time (or episodes of a series).
+    Suggested workarounds:
+
+        for movie in *
+        do
+            opensub-get "$movie"
+        done
+
+        find . -iname '*.avi' -print0 | xargs -0 -n1 opensub-get
+
 See Also:
     Search by movie title and other search options:
         http://www.opensubtitles.org/search/
@@ -100,7 +111,7 @@ See Also:
         http://www.opensubtitles.org/upload/
 
 License:
-    FIXME
+    FIXME choose license
 
 Credits:
     Many thanks to opensubtitles.org's folks for their great service.
@@ -109,10 +120,6 @@ Credits:
 
 __TODO__ = """
 functional
-    file argument clustering
-    opensub-mget
-        find . -maxdepth 1 -name '*.avi' -print0
-            | xargs -0 -n1 ~/src/python2/opensub-get/src/bin/opensub-get
     select 2nd, 3rd, etc. search result
     parameters
         --template -

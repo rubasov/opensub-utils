@@ -100,8 +100,6 @@ def extract_subtitle_urls(xml_file_object):
     return url_list
 
 
-# TODO rewrite to NamedFile()
-# maybe store StringIO file-like object instead of content?
 class Subtitle(object):
 
     """Subtitle struct."""
@@ -120,10 +118,18 @@ class Subtitle(object):
         return "{}({!r})".format(self.__class__, self.name)
 
 
-# TODO rewrite to extract_by_extension()
 # NOTE zipfile.ZipFile requires a seekable file handle.
 #      File-like objects returned by urlopen are not seekable.
 #      So we must take the whole archive content.
+#
+# NOTE I tried returning the open file-like objects (plus the name).
+#      That way we wouldn't have to keep both compressed and uncompressed
+#      subtitles in memory. The zipfile package prevents us doing this,
+#      because it shares seek positions between open files inside the archive.
+#      For details see:
+#      http://stackoverflow.com/questions/5624669
+#      http://docs.python.org/2/library/zipfile.html#zipfile.ZipFile.open
+#
 def extract_subtitles(
     zip_content,
     extensions=set(

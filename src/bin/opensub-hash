@@ -31,6 +31,8 @@ import errno
 import os
 import sys
 
+import docopt
+
 sys.path.append(
     os.path.join(
         os.path.dirname(
@@ -38,8 +40,6 @@ sys.path.append(
                 __file__)),
         "..",
         "lib"))
-
-import docopt
 
 import opensubtitles
 

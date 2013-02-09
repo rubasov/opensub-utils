@@ -145,6 +145,8 @@ import os
 import sys
 import urllib2
 
+import docopt
+
 sys.path.append(
     os.path.join(
         os.path.dirname(
@@ -152,8 +154,6 @@ sys.path.append(
                 __file__)),
         "..",
         "lib"))
-
-import docopt
 
 import opensubtitles
 

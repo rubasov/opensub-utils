@@ -1,36 +1,32 @@
 #! /usr/bin/python
 
 """
-NAME
-    opensub-hash - print hash of video files
+Usage:
+    opensub-get [-h|--help] [--version] <video-files>...
 
-SYNOPSIS
-    opensub-get [-h] VIDEO-FILE ...
+Description:
+    opensub-hash - Print hash of video files.
 
-DESCRIPTION
     Calculate and print hash of video files as used by opensubtitles.org.
-
     Output is a hash-filename pair per line.
 
     Keep in mind that the hash of a multi-file (multi-cd) movie is defined
     as the hash of the first file (cd).
 
-OPTIONS
-    -h --help
-        Print short usage info.
-
-SEE ALSO
-    * pydoc opensub-get
+See Also:
+    * opensub-get
     * http://www.opensubtitles.org/
+    * http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
-LICENSE
+License:
     FIXME
 
-CREDITS
+Credits:
     Copyright 2013 Bence Romsics <rubasov@gmail.com>
 """
 
-import argparse
+__version__ = "0.9"
+
 import errno
 import os
 import sys
@@ -43,30 +39,17 @@ sys.path.append(
         "..",
         "lib"))
 
+import docopt
+
 import opensubtitles
-
-
-def parse_cli_args():
-
-    """Procedure to parse command line arguments."""
-
-    p = argparse.ArgumentParser()
-
-    p.add_argument(
-        "video_file",
-        nargs="+",
-        help="video file(s)",
-        )
-
-    return p.parse_args()
 
 
 def main():
 
-    args = parse_cli_args()
+    args = docopt.docopt(__doc__, version=__version__)
     ev = 0
 
-    for path in args.video_file:
+    for path in args["<video-files>"]:
         try:
             print "{} {}".format(opensubtitles.file_hash(path=path), path)
         except OSError as e:

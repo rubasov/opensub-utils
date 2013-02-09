@@ -1,17 +1,62 @@
 #! /usr/bin/python
 
+__doc__ = """
+Usage:
+    opensub-get (-h | --help)
+    opensub-get (-m | --man)
+    opensub-get (-V | --version)
+    opensub-get [-v | -vv]
+                [-f | --force]
+                [-l <language> | --language=<language>]
+                [-s <server> | --server=<server>]
+                [--extract | --template=<template>]
+                <video-files>...
+
+Options:
+    -h, --help     Print usage and exit.
+    -m, --man      Print full manual and exit.
+    -V, --version  Print version and exit.
+
+    -v, --verbose  Increase verbosity. May be used twice (-vv).
+    -f, --force    Overwrite existing files when creating output files.
+
+    -l <language>, --language=<language>
+        ISO 639 code of subtitle language. [default: eng]
+
+    -s <server>, --server=<server>
+        Subtitle server. [default: www.opensubtitles.org]
+
+    -x, --extract
+        Extract output files as they are.
+        Mutually exclusive with --template.
+        See NAMING SCHEMES in manual (--man).
+
+    -t <template>, --template=<template>
+        Name output files according to template.
+        Mutually exclusive with --extract.
+        See NAMING SCHEMES in manual (--man).
 """
-NAME
-    opensub-get - download subtitle for a movie from opensubtitles.org
 
-SYNOPSIS
-    opensub-get [-h] [-v|-vv] [-l lang] [...] MOVIE-FILE [MOVIE-FILE-CD2 ...]
+__doc_rest__ = """
+Description:
+    opensub-get - Download subtitle for a movie from opensubtitles.org.
 
-DESCRIPTION
-    Using the hash of video files query opensubtitles.org.
-    Download a subtitle archive and extract the subtitles.
+    Do you hunt for subtitles based on movie title, file name, file size,
+    frame rate? Do you still adjust the subtitle delay and frame rate
+    in case you didn't find the perfect subtitle file? Are you tired of
+    all this?
 
-SUBTITLE FILE NAMING SCHEMES
+    This program calculates a hash of the movie you give it, and queries
+    opensubtitles.org by hash. The hash is a function of file size and
+    _content_. Therefore you're guaranteed to get the subtitle that is a
+    perfect match. Its quality may be high or low, but someone uploaded
+    it for the _exact_ same video file you have.
+
+    After downloading the subtitle zip archive, extract the files in a
+    convenient way without overwriting any existing files (unless you
+    explicitly ask for it). For details see Naming Schemes.
+
+Subtitle File Naming Schemes:
     1) Default: to match video file names.
 
         This mode assembles the output file name from:
@@ -44,69 +89,49 @@ SUBTITLE FILE NAMING SCHEMES
         Keep the subtitle file names as they are in the archive,
         but chop the leading directories if there's any.
 
-OPTIONS
-    -f --force
-        Overwrite existing files when producing creating output files.
+Environment Variables:
+    http_proxy=proxy:port - For details see Python's urrlib2.
 
-    -h --help
-        Print this help message and exit.
-
-    -l --language
-        ISO 639 code of subtitle language. Default: eng.
-
-    -s --server
-        Subtitle server. Default: www.opensubtitles.org.
-
-    -t --template
-        Name output files according to template. See NAMING SCHEMES.
-
-    -v --verbose
-        Increase verbosity. May be used twice (-vv).
-
-    -x --extract
-        Extract output files as they are. See NAMING SCHEMES.
-
-ENVIRONMENT VARIABLES
-    http_proxy=proxy:port - for details see Python's urrlib2
-
-SEE ALSO
+See Also:
     Search by movie title and other search options:
         http://www.opensubtitles.org/search/
 
     Subtitle upload:
         http://www.opensubtitles.org/upload/
 
-LICENSE
+License:
     FIXME
 
-CREDITS
+Credits:
     Many thanks to opensubtitles.org's folks for their great service.
     Copyright 2013 Bence Romsics <rubasov@gmail.com>
-
-TODO
-    functional
-        file argument clustering
-        opensub-mget
-            find . -maxdepth 1 -name '*.avi' -print0
-                | xargs -0 -n1 ~/src/python2/opensub-get/src/bin/opensub-get
-        select 2nd, 3rd, etc. search result
-        parameters
-            --template -
-                --template /dev/stdout --force
-            --template {base}.{ext}
-            --language lang1,lang2,...
-                preference order
-                validate language id
-        proper exit value
-        upload to github
-            ask for review by opensubtitles folks
-        license
-    development practice
-        python2/3 compatibility
-        setup.py
 """
 
-import argparse
+__TODO__ = """
+functional
+    file argument clustering
+    opensub-mget
+        find . -maxdepth 1 -name '*.avi' -print0
+            | xargs -0 -n1 ~/src/python2/opensub-get/src/bin/opensub-get
+    select 2nd, 3rd, etc. search result
+    parameters
+        --template -
+            --template /dev/stdout --force
+        --template {base}.{ext}
+        --language lang1,lang2,...
+            preference order
+            validate language id
+    proper exit value
+    upload to github
+        ask for review by opensubtitles folks
+    license
+development practice
+    python2/3 compatibility
+    setup.py
+"""
+
+__version__ = "0.99"
+
 import errno
 import logging
 import os
@@ -121,90 +146,9 @@ sys.path.append(
         "..",
         "lib"))
 
+import docopt
+
 import opensubtitles
-
-__version__ = "0.99"
-
-
-def setup_logging(verbosity):
-
-    """Procedure to set log level and format."""
-
-    log_level_dict = {
-        0: "WARNING",
-        1: "INFO",
-        2: "DEBUG",
-        }
-
-    try:
-        log_level = getattr(logging, log_level_dict[verbosity])
-    except KeyError:
-        raise Exception(
-            "invalid log level: -{}".format("v" * verbosity))
-
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s: %(filename)s:%(lineno)d: %(message)s",
-        )
-
-    return None
-
-
-def parse_cli_args():
-
-    """Procedure to parse command line arguments."""
-
-    p = argparse.ArgumentParser()
-
-    p.add_argument(
-        "-f", "--force",
-        action="store_true",
-        default=False,
-        help="overwrite existing files",
-        )
-
-    p.add_argument(
-        "-l", "--language",
-        action="store",
-        default="eng",
-        help="subtitle language id (ISO 639), default: eng",
-        )
-
-    p.add_argument(
-        "-s", "--server",
-        action="store",
-        default="www.opensubtitles.org",
-        help="server to query, default: www.opensubtitles.org",
-        )
-
-    p.add_argument(
-        "-t", "--template",
-        action="store",
-        help="name output files like: 'template-{num}.{ext}', optional",
-        )
-
-    p.add_argument(
-        "-v", "--verbose",
-        action="count",
-        default=0,
-        help="increase verbosity (-v, -vv), optional",
-        )
-
-    p.add_argument(
-        "-x", "--extract",
-        action="store_true",
-        default=False,
-        help="extract subtitles as named in the archive, optional",
-        )
-
-    p.add_argument(
-        "movie",
-        nargs="+",
-        help="video file (or files belonging to the same movie)",
-        )
-
-    args = p.parse_args()
-    return args
 
 
 def store(content, path, overwrite=False, suppress_eexist=True):
@@ -265,45 +209,93 @@ def write_subtitle_files(args, subtitle_list):
         return ext[1:]
 
     # naming scheme: use a template
-    if not args.template is None:
+    if args["--template"] is not None:
 
         # maybe FIXME option to override start=1
         for idx, subtitle in enumerate(subtitle_list, start=1):
             ext = ext_no_dot(subtitle.name)
-            dst = args.template.format(num=idx, ext=ext)
-            store(content=subtitle.content, path=dst, overwrite=args.force)
+            dst = args["--template"].format(num=idx, ext=ext)
+            store(
+                content=subtitle.content,
+                path=dst,
+                overwrite=args["--force"])
 
     # naming scheme: extract archive
-    elif args.extract:
+    elif args["--extract"]:
 
         for subtitle in subtitle_list:
             dst = os.path.basename(subtitle.name)
-            store(content=subtitle.content, path=dst, overwrite=args.force)
+            store(
+                content=subtitle.content,
+                path=dst,
+                overwrite=args["--force"])
 
     # naming scheme: match video file names
     else:
 
         # FIXME unchecked assumption
-        #
-        # the user provided video files in "natural order"
+        # The user provided video files in "natural order".
 
-        for video_file, subtitle in zip(args.movie, subtitle_list):
+        for video_file, subtitle in zip(args["<video-files>"], subtitle_list):
             base = os.path.splitext(video_file)[0]
             ext = ext_no_dot(subtitle.name)
             dst = "{}.{}".format(base, ext)
-            store(content=subtitle.content, path=dst, overwrite=args.force)
+            store(
+                content=subtitle.content,
+                path=dst,
+                overwrite=args["--force"])
+
+    return None
+
+
+def parse_args():
+
+    """
+    Procedure to parse command line options and arguments
+    and to handle early exits.
+    """
+
+    args = docopt.docopt(__doc__, version=__version__)
+
+    if args["--man"]:
+        print __doc__, __doc_rest__
+        sys.exit(0)
+
+    for video_file in args["<video-files>"]:
+        if not os.path.isfile(video_file):
+            raise Exception("no such file: {}".format(video_file))
+
+    return args
+
+
+def setup_logging(verbosity):
+
+    """Procedure to set log level and format."""
+
+    log_level_dict = {
+        0: "WARNING",
+        1: "INFO",
+        2: "DEBUG",
+        }
+
+    try:
+        log_level = getattr(logging, log_level_dict[verbosity])
+    except KeyError:
+        raise Exception(
+            "invalid log level: -{}".format("v" * verbosity))
+
+    logging.basicConfig(
+        level=log_level,
+        format="%(levelname)s: %(filename)s:%(lineno)d: %(message)s",
+        )
 
     return None
 
 
 def main():
 
-    args = parse_cli_args()
-    setup_logging(verbosity=args.verbose)
-
-    for video_file in args.movie:
-        if not os.path.isfile(video_file):
-            raise Exception("no such file: {}".format(video_file))
+    args = parse_args()
+    setup_logging(verbosity=args["--verbose"])
 
     user_agent = "{}/{}".format(
         os.path.basename(sys.argv[0]), __version__)
@@ -321,13 +313,13 @@ def main():
     opener.addheaders = headers
 
     ua = opensubtitles.UserAgent(
-        server=args.server,
+        server=args["--server"],
         opener=opener,
         )
 
     subtitle_list = ua.get_subtitle(
-        movie=args.movie,
-        language=args.language,
+        movie=args["<video-files>"],
+        language=args["--language"],
         )
 
     write_subtitle_files(

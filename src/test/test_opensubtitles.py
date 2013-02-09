@@ -34,6 +34,8 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
     def test__file_hash__file_too_small(self):
 
+        """File hashing should fail on empty and small files."""
+
         test_file = os.path.join(self.test_data_dir, "empty.avi")
         self.assertRaises(Exception,
             opensubtitles.file_hash, {'path': test_file})
@@ -61,6 +63,8 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
     def test__extract_subtitle_urls__not_found(self):
 
+        """Search result extraction should fail on empty search results."""
+
         test_file = os.path.join(
             self.test_data_dir, "no-results-simplexml.xml")
         with open(test_file, "r") as f:
@@ -68,6 +72,8 @@ class OpensubtitlesTestCase(unittest.TestCase):
                 opensubtitles.extract_subtitle_urls, f)
 
     def test__extract_subtitle_urls__malformed_xml(self):
+
+        """Search result extraction should fail on malformed documents."""
 
         self.assertRaises(Exception,
             opensubtitles.extract_subtitle_urls,

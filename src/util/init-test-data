@@ -1,5 +1,9 @@
 #! /bin/sh
 
+# FIXME Tests may fail unexpectedly in case the test data changes and
+# we don't notice it. We should have a check for this.
+# e.g. store and compare sha1sum test-data/*
+
 if [ $# -eq 1 -a \( "$1" = "-h" -o "$1" = "--help" \) ]
 then
     echo "usage: $0"

@@ -265,7 +265,7 @@ def write_subtitle_files(args, subtitle_list):
         return ext[1:]
 
     # naming scheme: use a template
-    if not args.template is None:
+    if args.template is not None:
 
         # maybe FIXME option to override start=1
         for idx, subtitle in enumerate(subtitle_list, start=1):

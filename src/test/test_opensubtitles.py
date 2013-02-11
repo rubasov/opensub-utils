@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+import errno
 import os
 import StringIO
 import sys
@@ -29,7 +30,12 @@ class OpensubtitlesTestCase(unittest.TestCase):
     def test__file_hash__breakdance_avi(self):
 
         test_file = os.path.join(self.test_data_dir, "breakdance.avi")
-        hash_value = opensubtitles.file_hash(path=test_file)
+        try:
+            hash_value = opensubtitles.file_hash(path=test_file)
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                raise Exception("Missing test data. See {} .".format(
+                    os.path.join(self.test_data_dir, "README.txt")))
         self.assertEqual(hash_value, "8e245d9679d31e12")
 
     def test__file_hash__file_too_small(self):
@@ -55,7 +61,8 @@ class OpensubtitlesTestCase(unittest.TestCase):
             ]
 
         test_file = os.path.join(
-            self.test_data_dir, "search-results-simplexml.xml")
+            self.test_data_dir,
+            "en_search_imdbid-56119_sublanguageid-eng_simplexml.xml")
         with open(test_file, "r") as f:
             result_urls = opensubtitles.extract_subtitle_urls(f)
 
@@ -66,9 +73,10 @@ class OpensubtitlesTestCase(unittest.TestCase):
         """Search result extraction should fail on empty search results."""
 
         test_file = os.path.join(
-            self.test_data_dir, "no-results-simplexml.xml")
+            self.test_data_dir,
+            "en_search_imdbid-0_sublanguageid-eng_simplexml.xml")
         with open(test_file, "r") as f:
-            self.assertRaises(Exception,
+            self.assertRaises(opensubtitles.SubtitleNotFound,
                 opensubtitles.extract_subtitle_urls, f)
 
     def test__extract_subtitle_urls__malformed_xml(self):
@@ -93,8 +101,6 @@ class OpensubtitlesTestCase(unittest.TestCase):
             subtitle_names = [s.name for s in subtitle_list]
 
         self.assertEqual(subtitle_names, expected)
-
-    # TODO test__get_subtitles__raises_SubtitleNotFound
 
 
 if __name__ == "__main__":

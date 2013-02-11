@@ -1,0 +1,16 @@
+functional
+    select 2nd, 3rd, etc. search result
+    parameters
+        --template -
+            --template /dev/stdout --force
+        --template {base}.{ext}
+        --language lang1,lang2,...
+            preference order
+            validate language id
+    proper exit value
+    upload to github
+        ask for review by opensubtitles folks
+    license
+development practice
+    python2/3 compatibility
+    setup.py

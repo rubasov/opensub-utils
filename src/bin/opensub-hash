@@ -18,11 +18,8 @@ See Also:
     * http://www.opensubtitles.org/
     * http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
-License:
-    FIXME choose license
-
 Credits:
-    Copyright 2013 Bence Romsics <rubasov@gmail.com>
+    Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
 """
 
 __version__ = "0.9"

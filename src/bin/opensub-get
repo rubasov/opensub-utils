@@ -117,12 +117,9 @@ See Also:
     Subtitle upload:
         http://www.opensubtitles.org/upload/
 
-License:
-    FIXME choose license
-
 Credits:
     Many thanks to opensubtitles.org's folks for their great service.
-    Copyright 2013 Bence Romsics <rubasov@gmail.com>
+    Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
 """
 
 __version__ = "0.99"

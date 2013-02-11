@@ -94,6 +94,8 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
         self.assertEqual(subtitle_names, expected)
 
+    # TODO test__get_subtitles__raises_SubtitleNotFound
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -309,15 +309,36 @@ def main():
         opener=opener,
         )
 
-    subtitle_list = ua.get_subtitle(
-        movie=args["<video-files>"],
-        language=args["--language"],
-        )
+    try:
+        subtitle_list = ua.get_subtitle(
+            movie=args["<video-files>"],
+            language=args["--language"],
+            )
+    except opensubtitles.SubtitleNotFound:
+        logging.error("subtitle not found")
 
-    write_subtitle_files(
-        args=args,
-        subtitle_list=subtitle_list,
-        )
+        sys.stdout.flush()
+
+        def w(msg):
+            sys.stderr.write(msg + "\n")
+
+        w("Maybe...")
+        w("...the video has embedded subtitles?")
+        w("       Typical for .mkv files.")
+        w("...you could try a different --language?")
+        w("...you could try other search options?")
+        w("       By title, IMDb id, etc.")
+        w("       http://www.opensubtitles.org/search/")
+        w("...you could upload the subtitle later")
+        w("       so that others have better luck.")
+        w("       http://www.opensubtitles.org/upload/")
+
+        sys.exit(1)
+    else:
+        write_subtitle_files(
+            args=args,
+            subtitle_list=subtitle_list,
+            )
 
 if __name__ == "__main__":
     main()

@@ -71,6 +71,10 @@ def movie_hash(file_list):
     return movie_hash
 
 
+class SubtitleNotFound(Exception):
+    pass
+
+
 def extract_subtitle_urls(xml_file_object):
 
     """
@@ -93,7 +97,7 @@ def extract_subtitle_urls(xml_file_object):
     elements = tree.findall("./results/subtitle/download")
 
     if len(elements) == 0:
-        raise Exception("subtitle not found")
+        raise SubtitleNotFound()
 
     url_list = map(lambda elem: elem.text, elements)
     logging.debug("search_result_urls: {}".format(url_list))

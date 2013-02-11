@@ -93,17 +93,24 @@ Environment Variables:
     http_proxy=proxy:port - For details see Python's urrlib2.
 
 Known Limitations:
-    Can't handle more than one movie at a time (or episodes of a series).
-    Suggested workarounds:
+    Multiple video file arguments are interpreted as video files belonging
+    to the same movie. Such movies were typical in the Compact Disc era.
+    They are still encountered - especially amongst older and rarer
+    movies.  This program still supports them, but this support comes at
+    the price of less convenient handling of multiple movies or episodes.
+    Suggested workarounds for multiple one-video-file movies or for
+    episodes of series:
 
-        for movie in *
+        for episode in *
         do
-            opensub-get "$movie"
+            opensub-get "$episode"
         done
 
         find . -iname '*.avi' -print0 | xargs -0 -n1 opensub-get
 
 See Also:
+    opensub-hash
+
     Search by movie title and other search options:
         http://www.opensubtitles.org/search/
 

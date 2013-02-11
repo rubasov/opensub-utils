@@ -293,13 +293,13 @@ def main():
         os.path.basename(sys.argv[0]), __version__)
 
     headers = list()
-    headers.append(("User-Agent", user_agent))
+    headers.append("User-Agent", user_agent)
 
     # This is a hack for less intrusive testing. Do not rely on it ever.
     # $ magic=more http_proxy=127.0.0.1:8123 program ...
     if "magic" in os.environ:
         logging.warning("env(magic) present, anything may happen")
-        headers.append(("Cache-Control", "only-if-cached"))
+        headers.append("Cache-Control", "only-if-cached")
 
     opener = urllib2.build_opener()
     opener.addheaders = headers

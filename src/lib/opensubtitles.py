@@ -15,11 +15,11 @@ def file_hash(path):
     """
     Hash a file.
 
-    The algorithm comes from this page:
+    The algorithm and original code comes from this page:
     http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
     Takes:
-        path - path of the file
+        path - path to the file
 
     Returns:
         hex string of hash

@@ -203,7 +203,7 @@ def write_subtitle_files(args, subtitle_list):
     # naming scheme: use a template
     if args["--template"] is not None:
 
-        # maybe FIXME option to override start=1
+        # maybe FIXME cli option to override start=1
         for idx, subtitle in enumerate(subtitle_list, start=1):
             ext = ext_no_dot(subtitle.name)
             dst = args["--template"].format(num=idx, ext=ext)

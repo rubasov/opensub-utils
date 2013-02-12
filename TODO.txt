@@ -9,7 +9,13 @@ functional
             validate language id
     upload to github
         ask for review by opensubtitles folks
+    document dependencies and portability
+        python versions: 2.7/3.2
+        python packages
+            six
+            docopt
+        unix only?
 development practice
-    python2/3 compatibility
+    test python3 compatibility exercising all code branches
     packaging
        setup.py

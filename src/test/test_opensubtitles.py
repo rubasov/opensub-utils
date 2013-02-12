@@ -1,8 +1,11 @@
 #! /usr/bin/python
 
+import six
+# implicit py2 import StringIO as six.BytesIO
+# implicit py3 import io.BytesIO as six.BytesIO
+
 import errno
 import os
-import StringIO
 import sys
 import unittest
 
@@ -85,7 +88,7 @@ class OpensubtitlesTestCase(unittest.TestCase):
 
         self.assertRaises(Exception,
             opensubtitles.extract_subtitle_urls,
-            StringIO.StringIO("<<junk>>"))
+            six.BytesIO(six.b("<<junk>>")))
 
     def test__extract_subtitles__4130212_zip(self):
 
@@ -95,7 +98,7 @@ class OpensubtitlesTestCase(unittest.TestCase):
             ]
 
         test_file = os.path.join(self.test_data_dir, "4130212.zip")
-        with open(test_file, "r") as z:
+        with open(test_file, "rb") as z:
             subtitle_list = opensubtitles.extract_subtitles(
                 zip_content=z.read())
             subtitle_names = [s.name for s in subtitle_list]

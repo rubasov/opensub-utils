@@ -1,11 +1,19 @@
 #! /usr/bin/python
 
+import six
+# implicit py2 import StringIO as six.BytesIO
+# implicit py3 import io.BytesIO as six.BytesIO
+
 import logging
 import os
-import StringIO
 import struct
 import sys
-import urllib2
+# NOTE The nicest would be to 'import ... as urllib.request',
+#      but that's not possible, sigh...
+if six.PY3:
+    import urllib.request as urllib_request
+else:
+    import urllib2 as urllib_request
 import xml.etree.ElementTree as etree
 import zipfile
 
@@ -33,7 +41,7 @@ def file_hash(path):
         fmt = "q"  # long long
         bufsize = struct.calcsize(fmt)
 
-        for _ in range(64 * 1024 / bufsize):
+        for _ in range(64 * 1024 // bufsize):
             buf = f.read(bufsize)
             hash_value += struct.unpack(fmt, buf)[0]
             hash_value &= 0xFFFFFFFFFFFFFFFF  # to remain as 64 bit number
@@ -99,7 +107,7 @@ def extract_subtitle_urls(xml_file_object):
     if len(elements) == 0:
         raise SubtitleNotFound()
 
-    url_list = map(lambda elem: elem.text, elements)
+    url_list = [e.text for e in elements]
     logging.debug("search_result_urls: {}".format(url_list))
     return url_list
 
@@ -162,7 +170,7 @@ def extract_subtitles(
     """
 
     # FIXME stringio vs bytearrayio
-    with zipfile.ZipFile(StringIO.StringIO(zip_content)) as z:
+    with zipfile.ZipFile(six.BytesIO(zip_content)) as z:
 
         logging.debug("files_in_archive: {}".format(z.namelist()))
 
@@ -184,7 +192,7 @@ class UserAgent(object):
 
     """Communicate with subtitle servers."""
 
-    def __init__(self, server, opener=urllib2.build_opener()):
+    def __init__(self, server, opener=urllib_request.build_opener()):
 
         self.server = server
         self.opener = opener

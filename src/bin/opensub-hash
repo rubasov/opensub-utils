@@ -22,6 +22,7 @@ Credits:
     Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
 """
 
+# FIXME better version handling (use git describe)
 __version__ = "0.9"
 
 import errno

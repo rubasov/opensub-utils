@@ -1,0 +1,19 @@
+# FIXME comment this file
+
+sudo apt-get install polipo
+
+cd opensub-utils/src/
+
+wget -O test/test-data/breakdance.avi ...
+
+python2.7 bin/opensub-hash test/test-data/breakdance.avi
+python3 bin/opensub-hash test/test-data/breakdance.avi
+
+python2.7 test/test_opensubtitles.py
+python3 test/test_opensubtitles.py
+
+# populate cache
+http_proxy=127.0.0.1:8123 ./bin/opensub-get -vv -t /dev/null -f some_multi_cd_movie*.avi
+
+magic=more http_proxy=127.0.0.1:8123 python2.7 bin/opensub-get -vv -t /dev/null -f some_multi_cd_movie*.avi
+magic=more http_proxy=127.0.0.1:8123 python3 bin/opensub-get -vv -t /dev/null -f some_multi_cd_movie*.avi

@@ -122,13 +122,19 @@ Credits:
     Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
 """
 
+# FIXME better version handling (use git describe)
 __version__ = "0.99"
+
+import six
 
 import errno
 import logging
 import os
 import sys
-import urllib2
+if six.PY3:
+    import urllib.request as urllib_request
+else:
+    import urllib2 as urllib_request
 
 import docopt
 
@@ -159,7 +165,7 @@ def store(content, path, overwrite=False, suppress_eexist=True):
 
     if overwrite:
 
-        with open(path, "w") as fo:
+        with open(path, "wb") as fo:
             fo.write(content)
 
     else:
@@ -167,9 +173,11 @@ def store(content, path, overwrite=False, suppress_eexist=True):
         try:
             # Open the file only if the open actually creates it,
             # that is do not overwrite an existing file.
-            # FIXME unix only
             fd = os.open(
                 path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+
+            # FIXME how much portable is this? unix only?
+            # http://docs.python.org/2/library/os.html#open-flag-constants
         except OSError as e:
             if e.errno == errno.EEXIST:
                 if suppress_eexist:
@@ -181,7 +189,7 @@ def store(content, path, overwrite=False, suppress_eexist=True):
             else:
                 raise
         else:
-            with os.fdopen(fd, "w") as fo:
+            with os.fdopen(fd, "wb") as fo:
                 fo.write(content)
 
     return None
@@ -301,7 +309,7 @@ def main():
         logging.warning("env(magic) present, anything may happen")
         headers.append(("Cache-Control", "only-if-cached"))
 
-    opener = urllib2.build_opener()
+    opener = urllib_request.build_opener()
     opener.addheaders = headers
 
     ua = opensubtitles.UserAgent(

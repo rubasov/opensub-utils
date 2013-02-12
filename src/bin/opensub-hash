@@ -39,7 +39,7 @@ sys.path.append(
         "..",
         "lib"))
 
-import opensubtitles
+import opensubtitles.hash
 
 
 def main():
@@ -49,7 +49,8 @@ def main():
 
     for path in args["<video-files>"]:
         try:
-            print("{} {}".format(opensubtitles.file_hash(path=path), path))
+            print("{} {}".format(
+                opensubtitles.hash.by_path(path), path))
         except OSError as e:
             if e.errno == errno.ENOENT:
                 sys.stdout.flush()

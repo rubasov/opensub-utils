@@ -6,8 +6,6 @@ import six
 
 import logging
 import os
-import struct
-import sys
 # NOTE The nicest would be to 'import ... as urllib.request',
 #      but that's not possible, sigh...
 if six.PY3:
@@ -17,73 +15,14 @@ else:
 import xml.etree.ElementTree as etree
 import zipfile
 
-
-def file_hash(path):
-
-    """
-    Hash a file.
-
-    The algorithm and original code comes from this page:
-    http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
-
-    Takes:
-        path - path to the file
-
-    Returns:
-        hex string of hash
-
-    Raises:
-        Exception - file too small: < 128 KiB
-    """
-
-    def chunk_hash(f, hash_value):
-
-        fmt = "q"  # long long
-        bufsize = struct.calcsize(fmt)
-
-        for _ in range(64 * 1024 // bufsize):
-            buf = f.read(bufsize)
-            hash_value += struct.unpack(fmt, buf)[0]
-            hash_value &= 0xFFFFFFFFFFFFFFFF  # to remain as 64 bit number
-
-        return hash_value
-
-    filesize = os.path.getsize(path)
-    if filesize < 2 * 64 * 1024:
-        raise Exception("file too small: < 128 KiB")
-
-    hash_value = filesize
-    with open(path, "rb") as f:
-        hash_value = chunk_hash(f, hash_value)
-        f.seek(max(0, filesize - 64 * 1024), 0)
-        hash_value = chunk_hash(f, hash_value)
-
-    hex_string = "{:016x}".format(hash_value)
-    logging.info("hash: {}".format(hex_string))
-    return hex_string
-
-
-def movie_hash(file_list):
-
-    """
-    Hash a multi-CD movie by the first file, ignore the rest.
-
-    Takes:
-        file_list - list of video files belonging to the movie
-
-    Returns:
-        hex string of hash
-    """
-
-    movie_hash = file_hash(file_list[0])
-    return movie_hash
+import opensubtitles.hash
 
 
 class SubtitleNotFound(Exception):
     pass
 
 
-def extract_subtitle_urls(xml_file_object):
+def extract_subtitle_urls(xml_file):
 
     """
     Extract search result URLs from simplexml.
@@ -95,7 +34,7 @@ def extract_subtitle_urls(xml_file_object):
         list of search result URLs (same order as in xml)
     """
 
-    tree = etree.parse(xml_file_object)
+    tree = etree.parse(xml_file)
 
     # FIXME use absolute xpath: /search/results/subtitle/download
     #
@@ -159,7 +98,7 @@ def extract_subtitles(
             /wiki/DevReadFirst#Subtitlefilesextensions
 
     Takes:
-        zip_content - zip archive content as a string
+        zip_content - zip archive content as a bytestring
         extensions - iterable of recognized subtitle extensions
 
     Returns:
@@ -242,15 +181,16 @@ class UserAgent(object):
         logging.debug("search_page_url: {}".format(url))
         return url
 
-    def get_subtitle(self, movie, language):
+    def get_subtitles(self, movie, language):
 
         """
         Get subtitles of movie.
 
-        Query for subtitles of movie.
-        Download first search result.
-        Extract archive.
-        Return subtitle objects ordered by subtitle name.
+        Wire elements together:
+            Query for subtitles of movie.
+            Download first search result.
+            Extract archive.
+            Return subtitle objects ordered by subtitle name.
 
         Takes:
             movie - list of video files belonging to movie ("natural order")
@@ -268,13 +208,13 @@ class UserAgent(object):
             self.opener.open(
             self.search_page_url(
                 language=language,
-                movie_hash=movie_hash(movie),
+                movie_hash=opensubtitles.hash.by_movie(movie),
                 cd_count=len(movie),
                 ))))
 
-        zip_fo = self.opener.open(subtitle_archive_url)
-        zip_content = zip_fo.read()
-        zip_fo.close()
+        zip_file = self.opener.open(subtitle_archive_url)
+        zip_content = zip_file.read()
+        zip_file.close()
 
         subtitle_list = extract_subtitles(zip_content=zip_content)
 

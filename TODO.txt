@@ -16,6 +16,13 @@ functional
             docopt
         unix only?
 development practice
-    test python3 compatibility exercising all code branches
+    test
+        all code branches should be covered
+            even if there's nothing else to test, but the lack of syntax errors
+                this is to support two different languages py2/3
+        refactor until it is possible to test
+            write_subtitles() and store()
+                in temp dir
+            get_subtitles()
     packaging
        setup.py

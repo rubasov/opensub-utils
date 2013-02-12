@@ -146,7 +146,8 @@ sys.path.append(
         "..",
         "lib"))
 
-import opensubtitles
+import opensubtitles.hash
+import opensubtitles.main
 
 
 def store(content, path, overwrite=False, suppress_eexist=True):
@@ -312,17 +313,17 @@ def main():
     opener = urllib_request.build_opener()
     opener.addheaders = headers
 
-    ua = opensubtitles.UserAgent(
+    ua = opensubtitles.main.UserAgent(
         server=args["--server"],
         opener=opener,
         )
 
     try:
-        subtitle_list = ua.get_subtitle(
+        subtitle_list = ua.get_subtitles(
             movie=args["<video-files>"],
             language=args["--language"],
             )
-    except opensubtitles.SubtitleNotFound:
+    except opensubtitles.main.SubtitleNotFound:
         logging.error("subtitle not found")
 
         sys.stdout.flush()

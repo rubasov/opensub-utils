@@ -250,7 +250,7 @@ def parse_args():
     args = docopt.docopt(__doc__, version=__version__)
 
     if args["--man"]:
-        print __doc__, __doc_rest__
+        print(__doc__, __doc_rest__)
         sys.exit(0)
 
     for video_file in args["<video-files>"]:

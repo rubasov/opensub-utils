@@ -161,6 +161,7 @@ def extract_subtitles(
         Exception - subtitle not found in archive
     """
 
+    # FIXME stringio vs bytearrayio
     with zipfile.ZipFile(StringIO.StringIO(zip_content)) as z:
 
         logging.debug("files_in_archive: {}".format(z.namelist()))
@@ -201,6 +202,10 @@ class UserAgent(object):
     # Depending on where the inputs come from you may need to
     # construct the urls more carefully and care for url encoding.
 
+    # FIXME Which variant of ISO 639 is accepted?
+    #
+    # So far I have used the 3-letter codes like 'eng', 'hun'...
+
     def search_page_url(
         self, movie_hash, language, cd_count=1, _fmt="simplexml"):
 
@@ -210,7 +215,7 @@ class UserAgent(object):
         Takes:
             movie_hash - hash of movie (hex string)
                 cf. movie_hash()
-            language - subtitle language according to ISO 639 (string)
+            language - preferred language (ISO 639 code string)
             cd_count - how many video files make up the movie?
 
         Returns:

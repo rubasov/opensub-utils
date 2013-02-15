@@ -35,7 +35,7 @@ def setup_logging(verbosity,
     return None
 
 
-def default_opener(program=sys.argv[0], version):
+def default_opener(version, program=sys.argv[0]):
 
     user_agent = "{}/{}".format(os.path.basename(program), version)
 

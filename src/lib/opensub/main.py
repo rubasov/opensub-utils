@@ -248,9 +248,6 @@ class SubtitleArchive(object):
             # tempfile is responsible to delete
             # the NamedTemporaryFile at this point
 
-        # do not suppress any exceptions
-        return False
-
     def _urlopen_via_tempfile(self):
 
         # zipfile needs a seekable file-like objects.

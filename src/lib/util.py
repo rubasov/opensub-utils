@@ -34,8 +34,6 @@ def setup_logging(verbosity,
 
     logging.basicConfig(level=num_level, format=fmt)
 
-    return None
-
 
 def default_opener(version, program=sys.argv[0]):
 

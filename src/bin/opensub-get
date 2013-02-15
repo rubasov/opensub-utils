@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-__doc__ = """
+"""
 Usage:
     opensub-get (-h | --help)
     opensub-get (-m | --man)

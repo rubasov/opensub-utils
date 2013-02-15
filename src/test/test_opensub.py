@@ -102,7 +102,7 @@ class ExtractTestCase(unittest.TestCase):
 
         test_file = os.path.join(test_data_dir(), "junk.xml")
         with open(test_file, "r") as f:
-            with self.assertRaises(etree.ParseError) as cm:
+            with self.assertRaises(etree.ParseError):
                 opensub.main.extract_by_xpath(xml_file=f, xpath="junk")
 
 

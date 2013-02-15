@@ -238,7 +238,7 @@ class SubtitleArchive(object):
 
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, _exc_type, _exc_value, _traceback):
 
         if self.zipfile is not None:
             self.zipfile.close()
@@ -247,6 +247,9 @@ class SubtitleArchive(object):
             self.tempfile.close()
             # tempfile is responsible to delete
             # the NamedTemporaryFile at this point
+
+        # do not suppress any exceptions
+        return False
 
     def _urlopen_via_tempfile(self):
 

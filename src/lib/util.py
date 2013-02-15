@@ -102,7 +102,7 @@ class FilenameBuilder(object):
 
         self.template = template
         self.start = start
-        self.step = start
+        self.step = step
 
         self.num = self.start
 

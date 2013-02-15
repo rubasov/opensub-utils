@@ -115,11 +115,15 @@ class FilenameBuilder(object):
             path that can be used to write the subtitle to
         """
 
-        v_dir, v_unix_base = os.path.split(video)
+        v_dir_no_slash, v_unix_base = os.path.split(video)
+        v_dir = os.path.join(v_dir_no_slash, "")  # NOTE
         v_base, v_ext = os.path.splitext(v_unix_base)
 
-        s_dir, s_unix_base = os.path.split(subtitle)
+        s_dir_no_slash, s_unix_base = os.path.split(subtitle)
+        s_dir = os.path.join(s_dir_no_slash, "")  # NOTE
         s_base, s_ext = os.path.splitext(s_unix_base)
+
+        # NOTE os.path.split strips trailing slashes, we have to add them back
 
         tpl_dict = {
             "num": self.num,

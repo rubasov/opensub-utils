@@ -16,9 +16,9 @@ def setup_logging(verbosity,
     Set log level and format.
 
     Takes:
-        verbosity - verbosity level like: 0, 1, 2
+        verbosity - verbosity level: 0, 1, 2
 
-    Side effects:
+    Side effect:
         changes global logging settings
     """
 
@@ -37,6 +37,8 @@ def setup_logging(verbosity,
 
 def default_opener(version, program=sys.argv[0]):
 
+    """Create urllib(2) opener which always adds user-agent header."""
+
     user_agent = "{}/{}".format(os.path.basename(program), version)
 
     headers = list()
@@ -54,7 +56,7 @@ def default_opener(version, program=sys.argv[0]):
     return opener
 
 
-class TemplateBuilder(object):
+class FilenameBuilder(object):
 
     def __init__(self,
         template="{video/dir}{video/base}{subtitle/ext}",
@@ -75,15 +77,15 @@ class TemplateBuilder(object):
         s_base, s_ext = os.path.splitext(s_unix_base)
 
         tpl_dict = {
-            "num"           : self.num,
+            "num": self.num,
 
-            "video/dir"     : v_dir,
-            "video/base"    : v_base,
-            "video/ext"     : v_ext,
+            "video/dir": v_dir,
+            "video/base": v_base,
+            "video/ext": v_ext,
 
-            "subtitle/dir"  : s_dir,
-            "subtitle/base" : s_base,
-            "subtitle/ext"  : s_ext,
+            "subtitle/dir": s_dir,
+            "subtitle/base": s_base,
+            "subtitle/ext": s_ext,
             }
 
         name_built = self.template.format(**tpl_dict)
@@ -95,7 +97,7 @@ class TemplateBuilder(object):
 def safe_open(path, overwrite=False):
 
     """
-    FIXME
+    FIXME docstring
 
     Takes:
         path - path to open

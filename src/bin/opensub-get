@@ -247,7 +247,7 @@ def main():
         # naming scheme: use a template
         template = args["--template"]
 
-    builder = util.TemplateBuilder(template=template)
+    builder = util.FilenameBuilder(template=template)
 
     with opensub.SubtitleArchive(
         url=preferred_result, opener=opener) as archive:

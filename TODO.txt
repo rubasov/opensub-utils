@@ -1,11 +1,6 @@
 functional
     select 2nd, 3rd, etc. search result
     parameters
-        better --template language
-            --extract could be a special case of --template
-            {num} {<video|subtitle>:<dir|base|dirbase|ext>
-            {video:dirbase}.{subtitle:ext}
-            ? portability: '/' in template vs os.path.join
         --language lang1,lang2,...
             preference order
             validate language id

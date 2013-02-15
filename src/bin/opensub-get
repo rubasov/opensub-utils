@@ -35,7 +35,7 @@ Options:
         Name output files according to template.
         Mutually exclusive with --extract.
         See NAMING SCHEMES in manual (--man).
-        [default: {base}.{ext}]
+        [default: {video/dir}{video/base}{subtitle/ext}]
 """
 
 __doc_rest__ = """
@@ -62,7 +62,7 @@ Subtitle File Naming Schemes:
 
         This mode assembles the output file name from:
 
-        * the video file name minus its extension
+        * the video file path minus its extension
         * the subtitle extension as in the archive
 
         Example:
@@ -73,21 +73,41 @@ Subtitle File Naming Schemes:
         movie_cd2.avi  movie_cd2.srt
         ...
 
-    2) Use a template: --template 'foo-{num}.{ext}'.
+        Internally uses template: {video/dir}{video/base}{subtitle/ext}
 
-        {num} Will be substituted by a running index of subtitle files.
-              Doesn't make much sense unless you have multiple subtitle
-              files. Starts counting from 1.
-
-        {ext} Will be substituted by the subtitle extension
-              as it was in the archive.
-
-        '--template -' writes the concatenated output to stdout.
-
-    3) Extract the archive as it is: --extract.
+    2) Extract the archive as it is: --extract.
 
         Keep the subtitle file names as they are in the archive,
-        but chop the leading directories if there's any.
+        but throw away the leading directories if there's any.
+
+        Internally uses template: {subtitle/base}{subtitle/ext}
+
+    3) Use a template explicitly: --template TEMPLATE
+
+        The following variables in TEMPLATE will be substituted:
+
+        {num}
+        Running index of subtitle files. Doesn't make much sense unless
+        you have multiple subtitle files. Starts counting from 1.
+
+        {video/dir} {video/base} {video/ext}
+        Parts of the respective video file path.
+
+        {subtitle/dir} {subtitle/base} {subtitle/ext}
+        Parts of the respective subtitle file path as it is in the archive.
+
+        Path parts example:
+
+            video        : path/to/file.foo
+
+            {video/dir}  : path/to/
+            {video/base} : file
+            {video/ext}  : .foo
+
+        The concatenation of dir, base and ext add up to a path
+        equivalent to the original.
+
+        '--template -' writes the concatenated output to stdout.
 
 Environment Variables:
     http_proxy=proxy:port - For details see Python's urrlib2.
@@ -222,10 +242,12 @@ def main():
 
     if args["--extract"]:
         # naming scheme: extract archive
-        builder = util.ExtractBuilder()
+        template = "{subtitle/base}{subtitle/ext}"
     else:
         # naming scheme: use a template
-        builder = util.TemplateBuilder(template=args["--template"])
+        template = args["--template"]
+
+    builder = util.TemplateBuilder(template=template)
 
     with opensub.SubtitleArchive(
         url=preferred_result, opener=opener) as archive:
@@ -234,8 +256,8 @@ def main():
             in zip(archive.open_subtitle_files(), args["<video-files>"]):
 
             dst = builder.build(
-                archived_name=archived_name,
-                video_path=video_path,
+                video=video_path,
+                subtitle=archived_name,
                 )
 
             logging.debug("src: {}".format(archived_name))

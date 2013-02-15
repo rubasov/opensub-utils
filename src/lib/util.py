@@ -53,29 +53,42 @@ def default_opener(program=sys.argv[0], version):
     return opener
 
 
-class ExtractBuilder(object):
-
-    def build(self, archived_name, video_path):
-
-        return os.path.basename(archived_name)
-
-
 class TemplateBuilder(object):
 
-    def __init__(self, template="{base}.{ext}", start=1):
+    def __init__(self,
+        template="{video/dir}{video/base}{subtitle/ext}",
+        start=1, step=1):
 
         self.template = template
-        self.num = start
+        self.start = start
+        self.step = start
 
-    def build(self, archived_name, video_path):
+        self.num = self.start
 
-        base = os.path.splitext(video_path)[0]
-        ext = os.path.splitext(archived_name)[1][1:]
+    def build(self, video, subtitle):
 
-        out = self.template.format(base=base, ext=ext, num=self.num)
+        v_dir, v_unix_base = os.path.split(video)
+        v_base, v_ext = os.path.splitext(v_unix_base)
 
-        self.num += 1
-        return out
+        s_dir, s_unix_base = os.path.split(subtitle)
+        s_base, s_ext = os.path.splitext(s_unix_base)
+
+        tpl_dict = {
+            "num"           : self.num,
+
+            "video/dir"     : v_dir,
+            "video/base"    : v_base,
+            "video/ext"     : v_ext,
+
+            "subtitle/dir"  : s_dir,
+            "subtitle/base" : s_base,
+            "subtitle/ext"  : s_ext,
+            }
+
+        name_built = self.template.format(**tpl_dict)
+
+        self.num += self.step
+        return name_built
 
 
 def safe_open(path, overwrite=False):

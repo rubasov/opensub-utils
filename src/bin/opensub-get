@@ -35,6 +35,7 @@ Options:
         Name output files according to template.
         Mutually exclusive with --extract.
         See NAMING SCHEMES in manual (--man).
+        [default: {base}.{ext}]
 """
 
 __doc_rest__ = """
@@ -81,8 +82,7 @@ Subtitle File Naming Schemes:
         {ext} Will be substituted by the subtitle extension
               as it was in the archive.
 
-        '--template /dev/stdout --force'
-            writes the concatenated output to stdout.
+        '--template -' writes the concatenated output to stdout.
 
     3) Extract the archive as it is: --extract.
 
@@ -125,12 +125,14 @@ Credits:
 # FIXME better version handling (use git describe)
 __version__ = "0.99"
 
-import six
-
 import errno
 import logging
 import os
+import shutil
 import sys
+import textwrap
+
+import six
 if six.PY3:
     import urllib.request as urllib_request
 else:
@@ -146,117 +148,22 @@ sys.path.append(
         "..",
         "lib"))
 
-import opensubtitles.hash
-import opensubtitles.main
+import opensub
+import util
 
 
-def store(content, path, overwrite=False, suppress_eexist=True):
-
-    """
-    Write content to file at path.
-
-    Takes:
-        content - content to be written
-        path - path to open and write to
-        overwrite - allow/disallow to overwrite existing files (boolean)
-        suppress_eexist - turn overwrite exception into a warning (boolean)
-    """
-
-    logging.info("store: {}".format(path))
-
-    if overwrite:
-
-        with open(path, "wb") as fo:
-            fo.write(content)
-
-    else:
-
-        try:
-            # Open the file only if the open actually creates it,
-            # that is do not overwrite an existing file.
-            fd = os.open(
-                path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
-
-            # FIXME how much portable is this? unix only?
-            # http://docs.python.org/2/library/os.html#open-flag-constants
-        except OSError as e:
-            if e.errno == errno.EEXIST:
-                if suppress_eexist:
-                    logging.warning(
-                        "refusing to overwrite file: {}".format(path))
-                    pass
-                else:
-                    raise
-            else:
-                raise
-        else:
-            with os.fdopen(fd, "wb") as fo:
-                fo.write(content)
-
-    return None
-
-
-def write_subtitle_files(args, subtitle_list):
-
-    """Procedure to write output files according to naming scheme."""
-
-    def ext_no_dot(path):
-
-        """Extension without leading dot."""
-
-        ext = os.path.splitext(path)[1]
-        if ext[1:] == "":
-            raise Exception("path has no extension: {}".format(path))
-        return ext[1:]
-
-    # naming scheme: use a template
-    if args["--template"] is not None:
-
-        # maybe FIXME cli option to override start=1
-        for idx, subtitle in enumerate(subtitle_list, start=1):
-            ext = ext_no_dot(subtitle.name)
-            dst = args["--template"].format(num=idx, ext=ext)
-            store(
-                content=subtitle.content,
-                path=dst,
-                overwrite=args["--force"])
-
-    # naming scheme: extract archive
-    elif args["--extract"]:
-
-        for subtitle in subtitle_list:
-            dst = os.path.basename(subtitle.name)
-            store(
-                content=subtitle.content,
-                path=dst,
-                overwrite=args["--force"])
-
-    # naming scheme: match video file names
-    else:
-
-        # FIXME unchecked assumption
-        # The user provided video files in "natural order".
-
-        for video_file, subtitle in zip(args["<video-files>"], subtitle_list):
-            base = os.path.splitext(video_file)[0]
-            ext = ext_no_dot(subtitle.name)
-            dst = "{}.{}".format(base, ext)
-            store(
-                content=subtitle.content,
-                path=dst,
-                overwrite=args["--force"])
-
-    return None
-
-
-def parse_args():
+def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
 
     """
-    Procedure to parse command line options and arguments
-    and to handle early exits.
+    Parse command line options and arguments.
+
+    Also handles early exits, like print-help-and-exit.
+
+    Returns:
+        dict of options and arguments
     """
 
-    args = docopt.docopt(__doc__, version=__version__)
+    args = docopt.docopt(doc, version=version, argv=argv)
 
     if args["--man"]:
         print(__doc__, __doc_rest__)
@@ -269,85 +176,94 @@ def parse_args():
     return args
 
 
-def setup_logging(verbosity):
+def print_not_found_hint(file):
 
-    """Procedure to set log level and format."""
-
-    log_level_dict = {
-        0: "WARNING",
-        1: "INFO",
-        2: "DEBUG",
-        }
-
-    try:
-        log_level = getattr(logging, log_level_dict[verbosity])
-    except KeyError:
-        raise Exception(
-            "invalid log level: -{}".format("v" * verbosity))
-
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s: %(filename)s:%(lineno)d: %(message)s",
+    msg = textwrap.dedent(
+        """
+        Maybe...
+        ...the video has embedded subtitles?
+               Typical for .mkv files.
+        ...you could try a different --language?
+        ...you could try other search options?
+               By title, IMDb id, etc.
+               http://www.opensubtitles.org/search/
+        ...you could upload the subtitle later
+               so that others have better luck.
+               http://www.opensubtitles.org/upload/
+        """
         )
-
-    return None
+    file.write(msg)
 
 
 def main():
 
     args = parse_args()
-    setup_logging(verbosity=args["--verbose"])
+    util.setup_logging(verbosity=args["--verbose"])
 
-    user_agent = "{}/{}".format(
-        os.path.basename(sys.argv[0]), __version__)
+    opener = util.default_opener(version=__version__)
 
-    headers = list()
-    headers.append(("User-Agent", user_agent))
-
-    # This is a hack for less intrusive testing. Do not rely on it ever.
-    # $ magic=more http_proxy=127.0.0.1:8123 program ...
-    if "magic" in os.environ:
-        logging.warning("env(magic) present, anything may happen")
-        headers.append(("Cache-Control", "only-if-cached"))
-
-    opener = urllib_request.build_opener()
-    opener.addheaders = headers
-
-    ua = opensubtitles.main.UserAgent(
+    ua = opensub.UserAgent(
         server=args["--server"],
         opener=opener,
         )
 
+    search_results = ua.search(
+        movie=args["<video-files>"],
+        language=args["--language"],
+        )
+
     try:
-        subtitle_list = ua.get_subtitles(
-            movie=args["<video-files>"],
-            language=args["--language"],
-            )
-    except opensubtitles.main.SubtitleNotFound:
+        preferred_result = search_results[0]
+    except IndexError:
         logging.error("subtitle not found")
-
         sys.stdout.flush()
-
-        def w(msg):
-            sys.stderr.write(msg + "\n")
-
-        w("Maybe...")
-        w("...the video has embedded subtitles?")
-        w("       Typical for .mkv files.")
-        w("...you could try a different --language?")
-        w("...you could try other search options?")
-        w("       By title, IMDb id, etc.")
-        w("       http://www.opensubtitles.org/search/")
-        w("...you could upload the subtitle later")
-        w("       so that others have better luck.")
-        w("       http://www.opensubtitles.org/upload/")
-
+        print_not_found_hint(sys.stderr)
         sys.exit(1)
+
+    if args["--extract"]:
+        # naming scheme: extract archive
+        builder = util.ExtractBuilder()
     else:
-        write_subtitle_files(
-            args=args,
-            subtitle_list=subtitle_list,
-            )
+        # naming scheme: use a template
+        builder = util.TemplateBuilder(template=args["--template"])
+
+    with opensub.SubtitleArchive(
+        url=preferred_result, opener=opener) as archive:
+
+        for (subtitle_file, archived_name), video_path \
+            in zip(archive.open_subtitle_files(), args["<video-files>"]):
+
+            dst = builder.build(
+                archived_name=archived_name,
+                video_path=video_path,
+                )
+
+            logging.debug("src: {}".format(archived_name))
+            logging.debug("dst: {}".format(dst))
+
+            try:
+                dst_file = util.safe_open(dst, overwrite=args["--force"])
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    logging.warning(
+                        "refusing to overwrite file: {}".format(dst))
+                else:
+                    raise
+            else:
+                shutil.copyfileobj(subtitle_file, dst_file)
+
+                if dst_file != sys.stdout:
+                    dst_file.close()
+
+    # FIXME update docs of naming schemes
+    # FIXME better template variables and combinations
+    # this could eliminate --extract
+    # {num}
+    # {basename} {dirname}
+    # {video_filename} {archived_subtitle_name}
+    # {name_wo_ext} {name_w_ext}
+    # FIXME warn if we didn't write a subtitle for all input files
+
 
 if __name__ == "__main__":
     main()

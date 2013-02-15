@@ -8,8 +8,8 @@ find . -type f \( -name '*.py' -o -name 'opensub-*' \) | xargs pep8
 
 wget -O test/test-data/breakdance.avi ...
 
-python2.7 test/test_opensubtitles.py
-python3 test/test_opensubtitles.py
+python2.7 test/test_opensub.py
+python3 test/test_opensub.py
 
 python2.7 bin/opensub-hash test/test-data/breakdance.avi
 python3 bin/opensub-hash test/test-data/breakdance.avi

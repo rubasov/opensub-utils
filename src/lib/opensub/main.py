@@ -183,8 +183,8 @@ class SubtitleArchive(object):
     """
     Access subtitles in a subtitle archive.
 
-    I haven't ever found a specification for opensubtitles.org's
-    subtitle archive format, so I'm listing my basic assumptions here:
+    I haven't ever found a specification for opensubtitles.org's subtitle
+    archive format, so I'm listing my basic assumptions here. -- rubasov
 
     The archive is a valid .zip file with any name.
     The .zip contains no directories.

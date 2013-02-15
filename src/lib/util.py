@@ -116,14 +116,15 @@ class FilenameBuilder(object):
         """
 
         v_dir_no_slash, v_unix_base = os.path.split(video)
-        v_dir = os.path.join(v_dir_no_slash, "")  # NOTE
+        v_dir = os.path.join(v_dir_no_slash, "")  # (1)
         v_base, v_ext = os.path.splitext(v_unix_base)
 
         s_dir_no_slash, s_unix_base = os.path.split(subtitle)
-        s_dir = os.path.join(s_dir_no_slash, "")  # NOTE
+        s_dir = os.path.join(s_dir_no_slash, "")  # (1)
         s_base, s_ext = os.path.splitext(s_unix_base)
 
-        # NOTE os.path.split strips trailing slashes, we have to add them back
+        # NOTE (1) os.path.split strips trailing slashes,
+        #          we have to add them back
 
         tpl_dict = {
             "num": self.num,
@@ -209,3 +210,6 @@ def extract_archive(archive, movie, builder, overwrite):
                 dst_file.close()
 
     # FIXME warn if we didn't write a subtitle for all input files
+    #
+    # Move file counting out of FilenameBuilder and then
+    # you can check the file count against len(movie) here.

@@ -25,7 +25,7 @@ def hash_file(file, file_size=None):
 
     Takes:
         file - seekable file-like object
-        file_size - size of file in bytes, optional
+        file_size - size of file in bytes
 
     Returns:
         hash as a zero-padded, 16-digit, lower case hex string
@@ -38,10 +38,7 @@ def hash_file(file, file_size=None):
     buf_size = struct.calcsize(fmt)
     chunk_size = 64 * 1024  # bytes
 
-    if chunk_size % buf_size != 0:
-        raise Exception(
-            "chunk_size should be multiple of buf_size: {}".format(
-                buf_size))
+    assert chunk_size % buf_size == 0
 
     def chunk(hash, seek_args):
         file.seek(*seek_args)
@@ -86,16 +83,15 @@ class UserAgent(object):
 
     def __init__(self, server, opener=urllib_request.build_opener()):
 
+        """
+        Takes:
+            server - FQDN or IP of server
+                e.g. "www.opensubtitles.org"
+            opener - urllib(2) opener object
+        """
+
         self.server = server
         self.opener = opener
-
-    def __repr__(self):
-
-        return "{}({!r})".format(self.__class__, self.__dict__)
-
-    def __str__(self):
-
-        return "{}({!r})".format(self.__class__, self.server)
 
     # maybe FIXME encode urls
     #
@@ -136,6 +132,15 @@ class UserAgent(object):
 
     def search(self, movie, language):
 
+        """
+        Takes:
+            movie - list of video file paths in "natural order"
+            language - ISO 639 code of subtitle language
+
+        Returns:
+            list of subtitle archive URLs (ordered as in the search results)
+        """
+
         with open(movie[0], "rb") as f:
             movie_hash = hash_file(f)
 
@@ -164,12 +169,38 @@ class UserAgent(object):
 
         return search_results
 
+    def __repr__(self):
+
+        return "{}({!r})".format(self.__class__, self.__dict__)
+
+    def __str__(self):
+
+        return "{}({!r})".format(self.__class__, self.server)
+
 
 class SubtitleArchive(object):
 
     """
-    http://trac.opensubtitles.org/projects/opensubtitles
-        /wiki/DevReadFirst#Subtitlefilesextensions
+    Access subtitles in a subtitle archive.
+
+    I haven't ever found a specification for opensubtitles.org's
+    subtitle archive format, so I'm listing my basic assumptions here:
+
+    The archive is a valid .zip file with any name.
+    The .zip contains no directories.
+        (Though we try to handle the presence of directories gracefully.)
+    The .zip contains one ore more subtitle file(s).
+    A subtitle file has one of the extensions listed here (case insensitive):
+        http://trac.opensubtitles.org/projects/opensubtitles
+            /wiki/DevReadFirst#Subtitlefilesextensions
+    All subtitle files in one archive belong to the same movie.
+    There is exactly one subtitle file for each video file of the movie.
+        (Think of multi-CD movies.)
+    There are no other subtitle files in the archive.
+    All other files in the archive can be ignored.
+        (e.g. .nfo files)
+    The "natural order" of the subtitle files is the same as if we have
+        ordered them by their archived names case insensitively.
     """
 
     def __init__(
@@ -181,11 +212,23 @@ class SubtitleArchive(object):
             [".srt", ".sub", ".smi", ".txt", ".ssa", ".ass", ".mpl"]),
         ):
 
+        """
+        Prefer using it as a context manager: with SubtitleArchive() as ...
+
+        Takes:
+            url - url of the subtitle archive
+            opener - urllib(2) opener object
+            sort_key - yield order of subtitles
+            extensions - iterable of valid subtitle extensions
+                lower case, include leading dot
+        """
+
         self.url = url
         self.opener = opener
         self.sort_key = sort_key
         self.extensions = extensions
 
+        # We may set these directly for testing purposes.
         self.tempfile = None
         self.zipfile = None
 
@@ -197,10 +240,21 @@ class SubtitleArchive(object):
 
     def __exit__(self, type, value, traceback):
 
-        self.zipfile.close()
-        self.tempfile.close()
+        if self.zipfile is not None:
+            self.zipfile.close()
 
-    def _open_via_tempfile(self):
+        if self.tempfile is not None:
+            self.tempfile.close()
+            # tempfile is responsible to delete
+            # the NamedTemporaryFile at this point
+
+    def _urlopen_via_tempfile(self):
+
+        # zipfile needs a seekable file-like objects.
+        # Therefore we cache the remote file in a local temporary file.
+
+        # See the notes here on why we need a *Named*TemporaryFile:
+        # http://docs.python.org/2/library/zipfile#zipfile.ZipFile.open
 
         if self.tempfile is None:
             dst = tempfile.NamedTemporaryFile()
@@ -212,21 +266,33 @@ class SubtitleArchive(object):
 
     def _open_as_zipfile(self):
 
-        assert self.tempfile is not None
-
         if self.zipfile is None:
+            self._urlopen_via_tempfile()
             self.zipfile = zipfile.ZipFile(self.tempfile.name)
 
     def open_subtitle_files(self):
 
-        self._open_via_tempfile()
+        """
+        Yields:
+            tuple(subtitle_file, archived_filename) in the order
+            determined by sort_key.
+        """
+
         self._open_as_zipfile()
 
         for name in sorted(self.zipfile.namelist(), key=self.sort_key):
 
             ext = os.path.splitext(name)[1]
-            if ext not in self.extensions:
+            if ext.lower() not in self.extensions:
                 continue
 
             with self.zipfile.open(name) as f:
                 yield (f, name)
+
+    def __repr__(self):
+
+        return "{}({!r})".format(self.__class__, self.__dict__)
+
+    def __str__(self):
+
+        return "{}({!r})".format(self.__class__, self.url)

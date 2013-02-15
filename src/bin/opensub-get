@@ -255,13 +255,6 @@ def main():
                 if dst_file != sys.stdout:
                     dst_file.close()
 
-    # FIXME update docs of naming schemes
-    # FIXME better template variables and combinations
-    # this could eliminate --extract
-    # {num}
-    # {basename} {dirname}
-    # {video_filename} {archived_subtitle_name}
-    # {name_wo_ext} {name_w_ext}
     # FIXME warn if we didn't write a subtitle for all input files
 
 

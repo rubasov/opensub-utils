@@ -1,20 +1,24 @@
 functional
     select 2nd, 3rd, etc. search result
     parameters
-        --template -
-            --template /dev/stdout --force
-        --template {base}.{ext}
+        better --template language
+            --extract could be a special case of --template
+            {num} {<video|subtitle>:<dir|base|dirbase|ext>
+            {video:dirbase}.{subtitle:ext}
+            ? portability: '/' in template vs os.path.join
         --language lang1,lang2,...
             preference order
             validate language id
     upload to github
         ask for review by opensubtitles folks
-    document dependencies and portability
-        python versions: 2.7/3.2
-        python packages
-            six
-            docopt
-        unix only?
+    document
+        naming scheme changes
+        dependencies and portability
+            python versions: 2.7/3.2
+            python packages
+                six
+                docopt
+            unix only?
 development practice
     test
         all code branches should be covered

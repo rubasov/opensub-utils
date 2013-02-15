@@ -37,7 +37,7 @@ def setup_logging(verbosity,
 
 def default_opener(version, program=sys.argv[0]):
 
-    """Create urllib(2) opener which always adds user-agent header."""
+    """Create urllib(2) opener to always add user-agent header."""
 
     user_agent = "{}/{}".format(os.path.basename(program), version)
 
@@ -58,9 +58,26 @@ def default_opener(version, program=sys.argv[0]):
 
 class FilenameBuilder(object):
 
+    """
+    Construct filenames for subtitles.
+
+    First, I wanted to write subtitles according to the standard subtitle
+    lookup rules of video players. That is - given the movie path,
+    replace the movie extension with the subtitle extension.
+
+    Later, I ended up with a much more generic templating. For details
+    see NAMING SCHEMES in the manual of opensub-get.
+    """
+
     def __init__(self,
         template="{video/dir}{video/base}{subtitle/ext}",
         start=1, step=1):
+
+        """
+        Takes:
+            template - string optionally containing template variables
+                see tpl_dict below for valid template variables
+        """
 
         self.template = template
         self.start = start
@@ -69,6 +86,15 @@ class FilenameBuilder(object):
         self.num = self.start
 
     def build(self, video, subtitle):
+
+        """
+        Takes:
+            video - path to video file
+            subtitle - path of subtitle in the archive
+
+        Returns:
+            path that can be used to write the subtitle to
+        """
 
         v_dir, v_unix_base = os.path.split(video)
         v_base, v_ext = os.path.splitext(v_unix_base)
@@ -97,7 +123,9 @@ class FilenameBuilder(object):
 def safe_open(path, overwrite=False):
 
     """
-    FIXME docstring
+    Open but do not overwrite by default. Open and overwrite on request.
+
+    Handle Unix convention of path="-" too.
 
     Takes:
         path - path to open

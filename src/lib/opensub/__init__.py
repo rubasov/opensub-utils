@@ -1,4 +1,4 @@
-"""Public interface of package."""
+"""Public interface."""
 
 # classes
 from .main import SubtitleArchive

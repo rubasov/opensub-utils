@@ -1,5 +1,7 @@
+import errno
 import logging
 import os
+import shutil
 import sys
 
 import six
@@ -54,6 +56,25 @@ def default_opener(version, program=sys.argv[0]):
     opener.addheaders = headers
 
     return opener
+
+
+def print_not_found_hint(file):
+
+    msg = textwrap.dedent(
+        """
+        Maybe...
+        ...the video has embedded subtitles?
+               Typical for .mkv files.
+        ...you could try a different --language?
+        ...you could try other search options?
+               By title, IMDb id, etc.
+               http://www.opensubtitles.org/search/
+        ...you could upload the subtitle later
+               so that others have better luck.
+               http://www.opensubtitles.org/upload/
+        """
+        )
+    file.write(msg)
 
 
 class FilenameBuilder(object):
@@ -146,3 +167,43 @@ def safe_open(path, overwrite=False):
         # http://docs.python.org/2/library/os.html#open-flag-constants
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
         return os.fdopen(fd, "wb")
+
+
+def extract_archive(archive, movie, builder, overwrite):
+
+    """
+    Extract subtitles from archive according to movie and naming scheme.
+
+    Takes:
+        archive - opensub.SubtitleArchive() object
+        movie - list of video files in "natural order"
+        builder - FilenameBuilder() object
+        overwrite - pass down to safe_open
+    """
+
+    for (subtitle_file, archived_name), video_path \
+        in zip(archive.open_subtitle_files(), movie):
+
+        dst = builder.build(
+            video=video_path,
+            subtitle=archived_name,
+            )
+
+        logging.debug("src: {}".format(archived_name))
+        logging.debug("dst: {}".format(dst))
+
+        try:
+            dst_file = safe_open(dst, overwrite=overwrite)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                logging.warning(
+                    "refusing to overwrite file: {}".format(dst))
+            else:
+                raise
+        else:
+            shutil.copyfileobj(subtitle_file, dst_file)
+
+            if dst_file != sys.stdout:
+                dst_file.close()
+
+    # FIXME warn if we didn't write a subtitle for all input files

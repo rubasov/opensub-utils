@@ -145,10 +145,8 @@ Credits:
 # FIXME better version handling (use git describe)
 __version__ = "0.99"
 
-import errno
 import logging
 import os
-import shutil
 import sys
 import textwrap
 
@@ -189,30 +187,17 @@ def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
         print(__doc__, __doc_rest__)
         sys.exit(0)
 
+    # make '--extract' a synonim to '--template {subtitle/base}{subtitle/ext}'
+    if args["--extract"]:
+        args["--template"] = "{subtitle/base}{subtitle/ext}"
+
     for video_file in args["<video-files>"]:
         if not os.path.isfile(video_file):
-            raise Exception("no such file: {}".format(video_file))
+            sys.stdout.flush()
+            sys.stderr.write("no such file: {}\n".format(video_file))
+            sys.exit(1)
 
     return args
-
-
-def print_not_found_hint(file):
-
-    msg = textwrap.dedent(
-        """
-        Maybe...
-        ...the video has embedded subtitles?
-               Typical for .mkv files.
-        ...you could try a different --language?
-        ...you could try other search options?
-               By title, IMDb id, etc.
-               http://www.opensubtitles.org/search/
-        ...you could upload the subtitle later
-               so that others have better luck.
-               http://www.opensubtitles.org/upload/
-        """
-        )
-    file.write(msg)
 
 
 def main():
@@ -237,47 +222,18 @@ def main():
     except IndexError:
         logging.error("subtitle not found")
         sys.stdout.flush()
-        print_not_found_hint(sys.stderr)
+        util.print_not_found_hint(sys.stderr)
         sys.exit(1)
-
-    if args["--extract"]:
-        # naming scheme: extract archive
-        template = "{subtitle/base}{subtitle/ext}"
-    else:
-        # naming scheme: use a template
-        template = args["--template"]
-
-    builder = util.FilenameBuilder(template=template)
 
     with opensub.SubtitleArchive(
         url=preferred_result, opener=opener) as archive:
 
-        for (subtitle_file, archived_name), video_path \
-            in zip(archive.open_subtitle_files(), args["<video-files>"]):
-
-            dst = builder.build(
-                video=video_path,
-                subtitle=archived_name,
-                )
-
-            logging.debug("src: {}".format(archived_name))
-            logging.debug("dst: {}".format(dst))
-
-            try:
-                dst_file = util.safe_open(dst, overwrite=args["--force"])
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    logging.warning(
-                        "refusing to overwrite file: {}".format(dst))
-                else:
-                    raise
-            else:
-                shutil.copyfileobj(subtitle_file, dst_file)
-
-                if dst_file != sys.stdout:
-                    dst_file.close()
-
-    # FIXME warn if we didn't write a subtitle for all input files
+        util.extract_archive(
+            archive=archive,
+            movie=args["<video-files>"],
+            builder=util.FilenameBuilder(args["--template"]),
+            overwrite=args["--force"],
+            )
 
 
 if __name__ == "__main__":

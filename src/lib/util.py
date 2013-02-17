@@ -155,7 +155,7 @@ class FilenameBuilder(object):
         v_dir, v_base, v_ext = self._split_dir_base_ext(video)
         s_dir, s_base, s_ext = self._split_dir_base_ext(subtitle)
 
-        tpl_dict = {
+        template_dict = {
             "num": num,
 
             "video/dir": v_dir,
@@ -171,18 +171,18 @@ class FilenameBuilder(object):
         # This way format() will raise a KeyError when
         # it encounters a template variable without a value.
         if six.PY3:
-            tpl_dict.update((k, v) for k, v
-                in tpl_dict.items() if v is not None)
+            template_dict.update((k, v) for k, v
+                in template_dict.items() if v is not None)
         else:
-            tpl_dict.update((k, v) for k, v
-                in tpl_dict.iteritems() if v is not None)
+            template_dict.update((k, v) for k, v
+                in template_dict.iteritems() if v is not None)
 
         # python3.2 gives PendingDeprecationWarning:
         #     object.__format__ with a non-empty format string is deprecated
         #
         # I'm completely lost what would be the non-deprecated version.
         # -- rubasov
-        name_built = self.template.format(**tpl_dict)
+        name_built = self.template.format(**template_dict)
 
         return name_built
 
@@ -235,7 +235,7 @@ def safe_close(file):
         file.close()
 
 
-def extract_archive(archive, movie, builder, overwrite):
+def extract_archive(archive, movie, builder, overwrite=False):
 
     """
     Extract subtitles from archive according to movie and naming scheme.
@@ -250,16 +250,16 @@ def extract_archive(archive, movie, builder, overwrite):
         number of subtitle files extracted and successfully written
     """
 
-    tpl_counter = itertools.count(1)
+    template_counter = itertools.count(1)
     count_of_files_written = 0
 
-    for tpl_num, video_path, (subtitle_file, archived_name) \
+    for template_num, video_path, (subtitle_file, archived_name) \
         in zip(tpl_counter, movie, archive.open_subtitle_files()):
 
         dst = builder.build(
             video=video_path,
             subtitle=archived_name,
-            num=tpl_num,
+            num=template_num,
             )
 
         logging.debug("src: {}".format(archived_name))

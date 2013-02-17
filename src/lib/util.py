@@ -104,6 +104,44 @@ class FilenameBuilder(object):
 
         self.num = self.start
 
+    def _split_dir_base_ext(self, path):
+
+        """
+        Split a file path 3-way.
+
+        Example:
+
+            path : foo/bar/baz.qux
+
+            dir  : foo/bar/
+            base : baz
+            ext  : .qux
+
+        The concatenation of dir, base and ext add up to a path
+        equivalent to the original.
+        """
+
+        if path == "":
+            raise Exception("invalid path: empty string")
+
+        head, tail = os.path.split(path)
+        dir = os.path.join(head, "")  # (1)
+        base, ext = os.path.splitext(tail)
+
+        # NOTE (1) os.path.split strips trailing slashes,
+        #          we have to add them back
+
+        if tail in ("", ".", ".."):  # (2)
+            raise Exception(
+                "invalid (dir-like) path: {}".format(path))
+
+        # NOTE (2) path looks like a dir, in unix terms:
+        #                 path ends in /
+        #              or last component of path is .
+        #              or last component of path is ..
+
+        return dir, base, ext
+
     def build(self, video, subtitle):
 
         """
@@ -115,16 +153,8 @@ class FilenameBuilder(object):
             path that can be used to write the subtitle to
         """
 
-        v_dir_no_slash, v_unix_base = os.path.split(video)
-        v_dir = os.path.join(v_dir_no_slash, "")  # (1)
-        v_base, v_ext = os.path.splitext(v_unix_base)
-
-        s_dir_no_slash, s_unix_base = os.path.split(subtitle)
-        s_dir = os.path.join(s_dir_no_slash, "")  # (1)
-        s_base, s_ext = os.path.splitext(s_unix_base)
-
-        # NOTE (1) os.path.split strips trailing slashes,
-        #          we have to add them back
+        v_dir, v_base, v_ext = self._split_dir_base_ext(video)
+        s_dir, s_base, s_ext = self._split_dir_base_ext(subtitle)
 
         tpl_dict = {
             "num": self.num,

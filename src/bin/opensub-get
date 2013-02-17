@@ -48,14 +48,15 @@ Description:
     all this?
 
     This program calculates a hash of the movie you give it, and queries
-    opensubtitles.org by hash. The hash is a function of file size and
-    _content_. Therefore you're guaranteed to get the subtitle that is a
-    perfect match. Its quality may be high or low, but someone uploaded
-    it for the _exact_ same video file you have.
+    opensubtitles.org by hash. The hash is a function of file size
+    and _content_. Therefore you're guaranteed to get a perfect match.
+    Quality still may be high or low, but someone uploaded the subtitle
+    file(s) for the _exact_ same video file(s) you have.
 
-    After downloading the subtitle zip archive, extract the files in a
-    convenient way without overwriting any existing files (unless you
-    explicitly ask for it). For details see Naming Schemes.
+    It downloads the subtitle file(s) and places them locally where your
+    video player expects them to be. By default it refuses to overwrite
+    existing files (though you can explicitly ask for it). For details
+    see Naming Schemes.
 
 Subtitle File Naming Schemes:
     1) Default: to match video file names.

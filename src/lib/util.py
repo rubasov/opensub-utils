@@ -1,4 +1,5 @@
 import errno
+import itertools
 import logging
 import os
 import shutil
@@ -88,9 +89,7 @@ class FilenameBuilder(object):
     see NAMING SCHEMES in the manual of opensub-get.
     """
 
-    def __init__(self,
-        template="{video/dir}{video/base}{subtitle/ext}",
-        start=1, step=1):
+    def __init__(self, template="{video/dir}{video/base}{subtitle/ext}"):
 
         """
         Takes:
@@ -99,10 +98,6 @@ class FilenameBuilder(object):
         """
 
         self.template = template
-        self.start = start
-        self.step = step
-
-        self.num = self.start
 
     def _split_dir_base_ext(self, path):
 
@@ -128,7 +123,7 @@ class FilenameBuilder(object):
         dir = os.path.join(head, "")  # (1)
         base, ext = os.path.splitext(tail)
 
-        # NOTE (1) os.path.split strips trailing slashes,
+        # NOTE (1) os.path.split strips trailing (back)slashes,
         #          we have to add them back
 
         if tail in ("", ".", ".."):  # (2)
@@ -139,15 +134,19 @@ class FilenameBuilder(object):
         #                 path ends in /
         #              or last component of path is .
         #              or last component of path is ..
+        #
+        # We reject dir-like paths, because they can too easily lead
+        # to hideous things like: /dir/ + subtitle.srt -> /dir/.srt
 
         return dir, base, ext
 
-    def build(self, video, subtitle):
+    def build(self, video=None, subtitle=None, num=None):
 
         """
         Takes:
             video - path to video file
             subtitle - path of subtitle in the archive
+            num - file number for numbered templating
 
         Returns:
             path that can be used to write the subtitle to
@@ -157,7 +156,7 @@ class FilenameBuilder(object):
         s_dir, s_base, s_ext = self._split_dir_base_ext(subtitle)
 
         tpl_dict = {
-            "num": self.num,
+            "num": num,
 
             "video/dir": v_dir,
             "video/base": v_base,
@@ -168,10 +167,36 @@ class FilenameBuilder(object):
             "subtitle/ext": s_ext,
             }
 
+        # Delete keys whose value is None from the template dictionary.
+        # This way format() will raise a KeyError when
+        # it encounters a template variable without a value.
+        if six.PY3:
+            tpl_dict.update((k, v) for k, v
+                in tpl_dict.items() if v is not None)
+        else:
+            tpl_dict.update((k, v) for k, v
+                in tpl_dict.iteritems() if v is not None)
+
+        # python3.2 gives PendingDeprecationWarning:
+        #     object.__format__ with a non-empty format string is deprecated
+        #
+        # I'm completely lost what would be the non-deprecated version.
+        # -- rubasov
         name_built = self.template.format(**tpl_dict)
 
-        self.num += self.step
         return name_built
+
+
+def binary_stdout():
+
+    """stdout where you can write bytes, not strings"""
+
+    if six.PY3:
+        # switch to binary stdout, python3 only
+        # http://bugs.python.org/issue4571#msg77230
+        return sys.stdout.buffer
+    else:
+        return sys.stdout
 
 
 def safe_open(path, overwrite=False):
@@ -179,7 +204,7 @@ def safe_open(path, overwrite=False):
     """
     Open but do not overwrite by default. Open and overwrite on request.
 
-    Handle Unix convention of path="-" too.
+    Handle Unix convention of "-" meaning stdout too.
 
     Takes:
         path - path to open
@@ -187,7 +212,7 @@ def safe_open(path, overwrite=False):
     """
 
     if path == "-":
-        return sys.stdout
+        return binary_stdout()
 
     if overwrite:
         return open(path, "wb")
@@ -202,6 +227,14 @@ def safe_open(path, overwrite=False):
         return os.fdopen(fd, "wb")
 
 
+def safe_close(file):
+
+    """Close anything, but stdout."""
+
+    if file != binary_stdout():
+        file.close()
+
+
 def extract_archive(archive, movie, builder, overwrite):
 
     """
@@ -212,14 +245,21 @@ def extract_archive(archive, movie, builder, overwrite):
         movie - list of video files in "natural order"
         builder - FilenameBuilder() object
         overwrite - pass down to safe_open
+
+    Returns:
+        number of subtitle files extracted and successfully written
     """
 
-    for (subtitle_file, archived_name), video_path \
-        in zip(archive.open_subtitle_files(), movie):
+    tpl_counter = itertools.count(1)
+    count_of_files_written = 0
+
+    for tpl_num, video_path, (subtitle_file, archived_name) \
+        in zip(tpl_counter, movie, archive.open_subtitle_files()):
 
         dst = builder.build(
             video=video_path,
             subtitle=archived_name,
+            num=tpl_num,
             )
 
         logging.debug("src: {}".format(archived_name))
@@ -235,11 +275,7 @@ def extract_archive(archive, movie, builder, overwrite):
                 raise
         else:
             shutil.copyfileobj(subtitle_file, dst_file)
+            count_of_files_written += 1
+            safe_close(dst_file)
 
-            if dst_file != sys.stdout:
-                dst_file.close()
-
-    # FIXME warn if we didn't write a subtitle for all input files
-    #
-    # Move file counting out of FilenameBuilder and then
-    # you can check the file count against len(movie) here.
+    return count_of_files_written

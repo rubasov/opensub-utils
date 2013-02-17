@@ -228,12 +228,20 @@ def main():
     with opensub.SubtitleArchive(
         url=preferred_result, opener=opener) as archive:
 
-        util.extract_archive(
+        count_of_files_written = util.extract_archive(
             archive=archive,
             movie=args["<video-files>"],
             builder=util.FilenameBuilder(args["--template"]),
             overwrite=args["--force"],
             )
+
+    if count_of_files_written < len(args["<video-files>"]):
+        logging.warning(
+            "couldn't find/extract/write {} file(s)".format(
+                len(args["<video-files>"]) - count_of_files_written))
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
 
 if __name__ == "__main__":

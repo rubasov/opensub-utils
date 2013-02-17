@@ -173,33 +173,26 @@ class NumTestCase(unittest.TestCase):
 
     def setUp(self):
 
-        self.template = "movie-cd{num}{subtitle/ext}"
+        self.template = "episode{num:02}{subtitle/ext}"
 
-    def test__one(self):
-
-        """movie-cd1.srt"""
+    def test__num(self):
 
         builder = util.FilenameBuilder(template=self.template)
         fname = builder.build(
             video="junk",
             subtitle="subtitle.srt",
+            num=7,
             )
-        self.assertEqual(os.path.normpath(fname), "movie-cd1.srt")
+        self.assertEqual(os.path.normpath(fname), "episode07.srt")
 
-    def test__two(self):
-
-        """movie-cd2.srt"""
+    def test__missing_value_for_tpl_var_num(self):
 
         builder = util.FilenameBuilder(template=self.template)
-        _ = builder.build(
-            video="junk",
-            subtitle="junk",
-            )
-        fname = builder.build(
-            video="junk",
-            subtitle="subtitle2.srt",
-            )
-        self.assertEqual(os.path.normpath(fname), "movie-cd2.srt")
+        with self.assertRaises(Exception):
+            fname = builder.build(
+                video="junk",
+                subtitle="subtitle.srt",
+                )
 
 
 class SafeOpenTestCase(unittest.TestCase):

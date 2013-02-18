@@ -178,6 +178,28 @@ class UserAgent(object):
         return "{}({!r})".format(self.__class__, self.server)
 
 
+class NamedFile(object):
+
+    """
+    File-like object with a name attribute.
+    """
+
+    def __init__(self, file, name):
+
+        self.file = file
+        self.name = name
+
+    def __getattr__(self, attr):
+
+        """
+        Delegate attribute lookups to the underlying file
+        in the same manner as tempfile.NamedTemporaryFile does.
+        """
+
+        file = self.__dict__["file"]
+        return getattr(file, attr)
+
+
 class SubtitleArchive(object):
 
     """
@@ -270,11 +292,11 @@ class SubtitleArchive(object):
             self._urlopen_via_tempfile()
             self.zipfile = zipfile.ZipFile(self.tempfile.name)
 
-    def open_subtitle_files(self):
+    def yield_open(self):
 
         """
         Yields:
-            tuple(subtitle_file, archived_filename) in the order
+            subtitle_file with an extra name attribute in the order
             determined by sort_key.
         """
 
@@ -287,7 +309,7 @@ class SubtitleArchive(object):
                 continue
 
             with self.zipfile.open(name) as f:
-                yield (f, name)
+                yield NamedFile(f, name)
 
     def __repr__(self):
 

@@ -117,11 +117,11 @@ class ArchiveTestCase(unittest.TestCase):
 
         test_file = os.path.join(test_data_dir(), "4130212.zip")
 
-        with open(test_file, "rb") as f:
+        with open(test_file, "rb") as tfile:
 
             archive = opensub.SubtitleArchive(url="http://127.0.0.1/dummy/")
-            archive.tempfile = f
-            subtitle_names = [t[1] for t in archive.open_subtitle_files()]
+            archive.tempfile = tfile
+            subtitle_names = [sfile.name for sfile in archive.yield_open()]
 
             self.assertEqual(subtitle_names, expected)
 

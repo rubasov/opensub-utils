@@ -253,16 +253,16 @@ def extract_archive(archive, movie, builder, overwrite=False):
     template_counter = itertools.count(1)
     count_of_files_written = 0
 
-    for template_num, video_path, (subtitle_file, archived_name) \
-        in zip(tpl_counter, movie, archive.open_subtitle_files()):
+    for template_num, video_path, subtitle_file in zip(
+        template_counter, movie, archive.yield_open()):
 
         dst = builder.build(
             video=video_path,
-            subtitle=archived_name,
+            subtitle=subtitle_file.name,
             num=template_num,
             )
 
-        logging.debug("src: {}".format(archived_name))
+        logging.debug("src: {}".format(subtitle_file.name))
         logging.debug("dst: {}".format(dst))
 
         try:

@@ -44,6 +44,7 @@ python bin/opensub-hash "$test_avi_path"
 python3 bin/opensub-hash "$test_avi_path"
 
 export http_proxy=127.0.0.1:8123
+export http_cache_control="only-if-cached"
 
 python bin/opensub-get -vv -t - >/dev/null "$@"
 python3 bin/opensub-get -vv -t - >/dev/null "$@"

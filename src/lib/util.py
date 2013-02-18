@@ -46,10 +46,10 @@ def default_opener(version, program=sys.argv[0]):
     headers.append(("User-Agent", user_agent))
 
     # This is a hack for less intrusive testing. Do not rely on it ever.
-    # $ magic=more http_proxy=127.0.0.1:8123 program ...
-    if "magic" in os.environ:
-        logging.warning("env(magic) present, anything may happen")
-        headers.append(("Cache-Control", "only-if-cached"))
+    # http_cache_control=only-if-cached http_proxy=127.0.0.1:8123 program ...
+    if "http_cache_control" in os.environ:
+        logging.warning("more magic, anything may happen")
+        headers.append(("Cache-Control", os.environ["http_cache_control"]))
 
     opener = urllib_request.build_opener()
     opener.addheaders = headers

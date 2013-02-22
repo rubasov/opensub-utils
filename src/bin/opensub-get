@@ -102,9 +102,9 @@ Subtitle File Naming Schemes:
 
             video        : path/to/file.foo
 
-            {video/dir}  : path/to/
+            {video/dir}  : path/to/   # NB: trailing slash included
             {video/base} : file
-            {video/ext}  : .foo
+            {video/ext}  : .foo       # NB: leading dot included
 
         The concatenation of dir, base and ext add up to a path
         equivalent to the original.
@@ -190,25 +190,95 @@ def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
         print(__doc__, __doc_rest__)
         sys.exit(0)
 
-    # make '--extract' a synonim to '--template {subtitle/base}{subtitle/ext}'
     if args["--extract"]:
         args["--template"] = "{subtitle/base}{subtitle/ext}"
 
+    def error_exit(msg, exit_code=1):
+        sys.stdout.flush()
+        sys.stderr.write(msg)
+        sys.exit(exit_code)
+
     for video_file in args["<video-files>"]:
-        if not os.path.isfile(video_file):
-            sys.stdout.flush()
-            sys.stderr.write("no such file: {}\n".format(video_file))
-            sys.exit(1)
+        if os.path.exists(video_file):
+            if os.path.isdir(video_file):
+                error_exit("is a directory: {}\n".format(video_file))
+        else:
+            error_exit("no such file: {}\n".format(video_file))
 
     return args
+
+
+def setup_logging(verbosity,
+    fmt="%(levelname)s: %(filename)s:%(lineno)d: %(message)s"):
+
+    """
+    Set log level and format.
+
+    Takes:
+        verbosity - verbosity level: 0, 1, 2
+
+    Side effect:
+        changes global logging settings
+    """
+
+    verbosity_to_level = {0: "WARNING", 1: "INFO", 2: "DEBUG"}
+
+    try:
+        # turn symbolic level to numeric level
+        num_level = getattr(logging, verbosity_to_level[verbosity])
+    except KeyError:
+        raise Exception("invalid verbosity level: {}".format(verbosity))
+
+    logging.basicConfig(level=num_level, format=fmt)
+
+
+def default_opener(version, program=sys.argv[0]):
+
+    """Create urllib(2) opener to always add user-agent header."""
+
+    user_agent = "{}/{}".format(os.path.basename(program), version)
+
+    headers = list()
+    headers.append(("User-Agent", user_agent))
+
+    # This is an intentionally undocumented hack for less intrusive testing.
+    # Use it only if you know what you are doing.
+    # http_cache_control=only-if-cached http_proxy=127.0.0.1:8123 program ...
+    if "http_cache_control" in os.environ:
+        logging.warning("more magic, anything may happen")
+        headers.append(("Cache-Control", os.environ["http_cache_control"]))
+
+    opener = urllib_request.build_opener()
+    opener.addheaders = headers
+
+    return opener
+
+
+def print_not_found_hint(file):
+
+    msg = textwrap.dedent(
+        """
+        Maybe...
+        ...the video has embedded subtitles?
+               Typical for .mkv files.
+        ...you could try a different --language?
+        ...you could try other search options?
+               By title, IMDb id, etc.
+               http://www.opensubtitles.org/search/
+        ...you could upload the subtitle later
+               so that others have better luck.
+               http://www.opensubtitles.org/upload/
+        """
+        )
+    file.write(msg)
 
 
 def main():
 
     args = parse_args()
-    util.setup_logging(verbosity=args["--verbose"])
+    setup_logging(verbosity=args["--verbose"])
 
-    opener = util.default_opener(version=__version__)
+    opener = default_opener(version=__version__)
 
     ua = opensub.UserAgent(
         server=args["--server"],
@@ -225,7 +295,7 @@ def main():
     except IndexError:
         logging.error("subtitle not found")
         sys.stdout.flush()
-        util.print_not_found_hint(sys.stderr)
+        print_not_found_hint(sys.stderr)
         sys.exit(1)
 
     with opensub.SubtitleArchive(

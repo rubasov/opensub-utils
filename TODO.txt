@@ -5,9 +5,15 @@ redesign
         turn SubtitleArchive into SubtitleCollection
         turn extract_archive into SubtitleCollection.get
         SearchResult ?= SubtitleCollection
+    how well your design hid that the search interface is suboptimal?
+        think about the ideal file-by-file search
+    break util.py into proper modules
+    consider using xml-rpc search
 packaging
     setup.py
     how to use git versions automatically?
+        version templating in a separate file
+        changelog generation
 upload to github
     ask for review by opensubtitles folks
     README
@@ -27,7 +33,12 @@ user interface
         method to set default language(s) permanently
             config file?
             environment variable?
+                use LANGUAGE ??
 document
+    design document
+      choices
+      decisions
+      benefits, drawbacks
     dependencies and portability
         python versions: 2.7/3.2
         python packages

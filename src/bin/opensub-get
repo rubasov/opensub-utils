@@ -10,6 +10,7 @@ Usage:
                 [-l <language> | --language=<language>]
                 [-s <server> | --server=<server>]
                 [--extract | --template=<template>]
+                [--]
                 <video-files>...
 
 Options:

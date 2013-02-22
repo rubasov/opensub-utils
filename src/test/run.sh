@@ -46,11 +46,11 @@ python3 bin/opensub-hash "$test_avi_path"
 export http_proxy=127.0.0.1:8123
 export http_cache_control="only-if-cached"
 
-python bin/opensub-get -vv -t - >/dev/null "$@"
-python3 bin/opensub-get -vv -t - >/dev/null "$@"
+python bin/opensub-get -vv -t - >/dev/null -- "$@"
+python3 bin/opensub-get -vv -t - >/dev/null -- "$@"
 
 tmpdir="$( mktemp -d )"
-python bin/opensub-get -vv -t "$tmpdir/test-{num}.{subtitle/ext}" "$@"
-python3 bin/opensub-get -vv -t "$tmpdir/test3-{num}.{subtitle/ext}" "$@"
-rm -f "$tmpdir"/test*
-rmdir "$tmpdir"
+python bin/opensub-get -vv -t "$tmpdir/test-{num}{subtitle/ext}" -- "$@"
+python3 bin/opensub-get -vv -t "$tmpdir/test3-{num}{subtitle/ext}" -- "$@"
+rm -f -- "$tmpdir"/test*
+rmdir -- "$tmpdir"

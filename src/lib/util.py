@@ -45,7 +45,8 @@ def default_opener(version, program=sys.argv[0]):
     headers = list()
     headers.append(("User-Agent", user_agent))
 
-    # This is a hack for less intrusive testing. Do not rely on it ever.
+    # This is an intentionally undocumented hack for less intrusive testing.
+    # Use it only if you know what you are doing.
     # http_cache_control=only-if-cached http_proxy=127.0.0.1:8123 program ...
     if "http_cache_control" in os.environ:
         logging.warning("more magic, anything may happen")

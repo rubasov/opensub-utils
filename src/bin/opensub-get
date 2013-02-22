@@ -113,6 +113,7 @@ Subtitle File Naming Schemes:
 
 Environment Variables:
     http_proxy=proxy:port - For details see Python's urrlib2.
+    TMPDIR, TEMP, TMP - For details see Python's tempfile.
 
 Known Limitations:
     Multiple video file arguments are interpreted as video files belonging

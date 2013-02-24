@@ -50,9 +50,9 @@ Description:
 
     This program calculates a hash of the movie you give it, and queries
     opensubtitles.org by hash. The hash is a function of file size
-    and _content_. Therefore you're guaranteed to get a perfect match.
+    and _content_. Therefore you're guaranteed to get an exact match.
     Quality still may be high or low, but someone uploaded the subtitle
-    file(s) for the _exact_ same video file(s) you have.
+    file(s) for the exact same video file(s) you have.
 
     It downloads the subtitle file(s) and places them locally where your
     video player expects them to be. By default it refuses to overwrite

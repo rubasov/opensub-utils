@@ -45,3 +45,6 @@ document
             six
             docopt
     unix only?
+
+find /home/rubasov/m/movie/ -iname '*.avi' -print0 | sort -z | xargs -0 -n1 dirname | uniq -d | xargs -d \\n -I {} find {} -iname '*.avi' | xargs -d \\n opensub-hash | sort -k2
+http://trac.opensubtitles.org/projects/opensubtitles/wiki/OSDb

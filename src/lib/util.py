@@ -125,7 +125,7 @@ class FilenameBuilder(object):
 
 def binary_stdout():
 
-    """stdout where you can write bytes, not strings"""
+    """Binary stdout: accepts bytes, not strings."""
 
     if six.PY3:
         # switch to binary stdout, python3 only
@@ -140,11 +140,13 @@ def safe_open(path, overwrite=False):
     """
     Open but do not overwrite by default. Open and overwrite on request.
 
-    Handle Unix convention of "-" meaning stdout too.
-
     Takes:
         path - path to open
         overwrite - allow/disallow to overwrite existing files (boolean)
+
+    Special case:
+        path='-': Return stdout without opening it.
+
     """
 
     if path == "-":

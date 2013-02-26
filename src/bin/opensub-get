@@ -170,7 +170,6 @@ sys.path.append(
         "lib"))
 
 import opensub
-import util
 
 
 def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
@@ -301,10 +300,9 @@ def main():
     with opensub.SubtitleArchive(
         url=preferred_result, opener=opener) as archive:
 
-        count_of_files_written = util.extract_archive(
-            archive=archive,
+        count_of_files_written = archive.extract(
             movie=args["<video-files>"],
-            builder=util.FilenameBuilder(args["--template"]),
+            builder=opensub.FilenameBuilder(args["--template"]),
             overwrite=args["--force"],
             )
 

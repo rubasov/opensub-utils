@@ -1,18 +1,14 @@
-Data Files You Need to Get
-==========================
-
-## breakdance.avi
-# Ignored by git, because of its size.
-# You may want to re-download it before running the test suite.
-http://www.opensubtitles.org/addons/avi/breakdance.avi
-http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
-
-
-Sources of Other Test Files
-===========================
+Sources of Test Files
+=====================
 
 ## 4130212.zip
 http://dl.opensubtitles.org/en/download/subad/4130212
+
+## breakdance.avi
+# Ignored by git, because of its size.
+# The test suite will download it at first run.
+http://www.opensubtitles.org/addons/avi/breakdance.avi
+http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
 ## empty.avi
 touch empty.avi

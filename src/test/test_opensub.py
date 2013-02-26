@@ -30,33 +30,6 @@ def test_data_dir():
         "test-data")
 
 
-class HashTestCase(unittest.TestCase):
-
-    def test__hash_file__breakdance_avi(self):
-
-        test_file = os.path.join(test_data_dir(), "breakdance.avi")
-        try:
-            with open(test_file, "rb") as f:
-                hash = opensub.hash_file(f)
-        except OSError as e:
-            if e.errno == errno.ENOENT:
-                raise Exception("Missing test data. See {} .".format(
-                    os.path.join(test_data_dir(), "README.txt")))
-
-        self.assertEqual(hash, "8e245d9679d31e12")
-
-    def test__hash_file__file_too_small(self):
-
-        """
-        File hashing should fail on empty and small files, because the
-        hash algorithm is undefined for files smaller than 128 KiB.
-        """
-
-        with open("/dev/null", "rb") as f:
-            with self.assertRaises(Exception):
-                opensub.hash_file(f)
-
-
 class SimpleXMLTestCase(unittest.TestCase):
 
     def test__extract_by_xpath__found(self):

@@ -25,21 +25,8 @@ fi
 
 cd "$( dirname "$0" )"/..
 
-test_avi_path="test/test-data/breakdance.avi"
-if ! test -f "$test_avi_path"
-then
-    wget \
-        --tries=1 \
-        --no-clobber \
-        --output-document="$test_avi_path" \
-        "http://www.opensubtitles.org/addons/avi/breakdance.avi"
-fi
-
 ls test/test_* | xargs -n1 python
 ls test/test_* | xargs -n1 python3
-
-python bin/opensub-hash "$test_avi_path"
-python3 bin/opensub-hash "$test_avi_path"
 
 export http_proxy=127.0.0.1:8123
 export http_cache_control="only-if-cached"

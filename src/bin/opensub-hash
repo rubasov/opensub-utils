@@ -45,26 +45,17 @@ import opensub
 def main():
 
     args = docopt.docopt(__doc__, version=__version__)
-    ev = 0
+    exit_code = 0
 
     for path in args["<video-files>"]:
 
         try:
-
             with open(path, "rb") as f:
                 print("{} {}".format(opensub.hash_file(f), path))
+        except:
+            exit_code = 1
 
-        except OSError as e:
-
-            if e.errno == errno.ENOENT:
-                sys.stdout.flush()
-                sys.stderr.write("no such file: {}\n".format(path))
-                ev = 1
-                pass
-            else:
-                raise
-
-    sys.exit(ev)
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

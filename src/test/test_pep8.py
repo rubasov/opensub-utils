@@ -24,8 +24,8 @@ class Pep8ConformanceTestCase(unittest.TestCase):
     $ pep8 --version
     1.2
 
-    future FIXME: Use the pep8 module via 'import pep8' when you have
-                  a sufficiently new version of pep8. For example in 1.4.4:
+    future FIXME Use the pep8 module via 'import pep8' when you have
+                 a sufficiently new version of pep8, like 1.4.4:
 
     http://pep8.readthedocs.org/en/1.4.4/advanced.html#automated-tests
     """

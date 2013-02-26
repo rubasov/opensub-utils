@@ -16,6 +16,85 @@ else:
     import urllib2 as urllib_request
 
 
+def binary_stdout():
+
+    """Binary stdout: accepts bytes, not strings."""
+
+    if six.PY3:
+        # switch to binary stdout, python3 only
+        # http://bugs.python.org/issue4571#msg77230
+        return sys.stdout.buffer
+    else:
+        return sys.stdout
+
+
+def safe_open(path, overwrite=False):
+
+    """
+    Open but do not overwrite by default. Open and overwrite on request.
+
+    Takes:
+        path - path to open
+        overwrite - allow/disallow to overwrite existing files (boolean)
+
+    Special case:
+        path='-': Return stdout without opening it.
+
+    """
+
+    if path == "-":
+        return binary_stdout()
+
+    if overwrite:
+        return open(path, "wb")
+
+    else:
+        # Open the file only if the open actually creates it,
+        # that is do not overwrite an existing file.
+
+        # FIXME how much portable is this? unix only?
+        # http://docs.python.org/2/library/os.html#open-flag-constants
+        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        return os.fdopen(fd, "wb")
+
+
+def safe_close(file):
+
+    """Close anything, but stdout."""
+
+    if file != binary_stdout():
+        file.close()
+
+
+def extract_by_xpath(xml_file, xpath, fun=lambda x: x):
+
+    tree = etree.parse(xml_file)
+    lst = [fun(elem) for elem in tree.findall(xpath)]
+    return lst
+
+
+class NamedFile(object):
+
+    """
+    File-like object with a name attribute.
+    """
+
+    def __init__(self, file, name):
+
+        self.file = file
+        self.name = name
+
+    def __getattr__(self, attr):
+
+        """
+        Delegate attribute lookups to the underlying file in the same manner
+        as tempfile.NamedTemporaryFile does, but without attribute caching.
+        """
+
+        file = self.__dict__["file"]
+        return getattr(file, attr)
+
+
 def hash_file(file, file_size=None):
 
     """
@@ -73,13 +152,6 @@ def hash_file(file, file_size=None):
     return hex_str
 
 
-def extract_by_xpath(xml_file, xpath, fun=lambda x: x):
-
-    tree = etree.parse(xml_file)
-    lst = [fun(elem) for elem in tree.findall(xpath)]
-    return lst
-
-
 class UserAgent(object):
 
     """Communicate with subtitle servers."""
@@ -105,7 +177,7 @@ class UserAgent(object):
     #
     # So far I have used the 3-letter codes like 'eng', 'hun'...
 
-    def search_page_url(
+    def _search_page_url(
         self, movie_hash, language, cd_count=1, _fmt="simplexml"):
 
         """
@@ -149,7 +221,7 @@ class UserAgent(object):
 
         cd_count = len(movie)
 
-        search_page_url = self.search_page_url(
+        search_page_url = self._search_page_url(
             language=language,
             movie_hash=movie_hash,
             cd_count=cd_count,
@@ -179,28 +251,6 @@ class UserAgent(object):
     def __str__(self):
 
         return "{}({!r})".format(self.__class__, self.server)
-
-
-class NamedFile(object):
-
-    """
-    File-like object with a name attribute.
-    """
-
-    def __init__(self, file, name):
-
-        self.file = file
-        self.name = name
-
-    def __getattr__(self, attr):
-
-        """
-        Delegate attribute lookups to the underlying file in the same manner
-        as tempfile.NamedTemporaryFile does, but without attribute caching.
-        """
-
-        file = self.__dict__["file"]
-        return getattr(file, attr)
 
 
 class SubtitleArchive(object):
@@ -468,7 +518,7 @@ class FilenameBuilder(object):
             template_dict.update((k, v) for k, v
                 in template_dict.iteritems() if v is not None)
 
-        # python3.2 gives PendingDeprecationWarning:
+        # FIXME python3.2 PendingDeprecationWarning:
         #     object.__format__ with a non-empty format string is deprecated
         #
         # I'm completely lost what would be the non-deprecated version.
@@ -476,53 +526,3 @@ class FilenameBuilder(object):
         name_built = self.template.format(**template_dict)
 
         return name_built
-
-
-def binary_stdout():
-
-    """Binary stdout: accepts bytes, not strings."""
-
-    if six.PY3:
-        # switch to binary stdout, python3 only
-        # http://bugs.python.org/issue4571#msg77230
-        return sys.stdout.buffer
-    else:
-        return sys.stdout
-
-
-def safe_open(path, overwrite=False):
-
-    """
-    Open but do not overwrite by default. Open and overwrite on request.
-
-    Takes:
-        path - path to open
-        overwrite - allow/disallow to overwrite existing files (boolean)
-
-    Special case:
-        path='-': Return stdout without opening it.
-
-    """
-
-    if path == "-":
-        return binary_stdout()
-
-    if overwrite:
-        return open(path, "wb")
-
-    else:
-        # Open the file only if the open actually creates it,
-        # that is do not overwrite an existing file.
-
-        # FIXME how much portable is this? unix only?
-        # http://docs.python.org/2/library/os.html#open-flag-constants
-        fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
-        return os.fdopen(fd, "wb")
-
-
-def safe_close(file):
-
-    """Close anything, but stdout."""
-
-    if file != binary_stdout():
-        file.close()

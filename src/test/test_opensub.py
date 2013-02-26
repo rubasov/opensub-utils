@@ -3,6 +3,7 @@
 import errno
 import os
 import sys
+import tempfile
 import xml.etree.ElementTree as etree
 import unittest
 
@@ -308,8 +309,27 @@ class NumTestCase(unittest.TestCase):
 
 class SafeOpenTestCase(unittest.TestCase):
 
-    # TODO test opensub.main.safe_open()
-    pass
+    def test__no_overwrite(self):
+
+        """
+        safe_open should not overwrite existing files.
+        """
+
+        tmpfile = tempfile.NamedTemporaryFile()
+        with self.assertRaises(OSError) as cm:
+            opensub.main.safe_open(tmpfile.name)
+        self.assertEqual(cm.exception.errno, errno.EEXIST)
+        tmpfile.close()
+
+
+class BinaryStdoutTestCase(unittest.TestCase):
+
+    def test__binary_write(self):
+
+        try:
+            opensub.main.binary_stdout().write(b"")
+        except TypeError:
+            self.fail("should be able to write binary data")
 
 
 if __name__ == "__main__":

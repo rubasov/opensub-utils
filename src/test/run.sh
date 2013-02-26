@@ -35,8 +35,6 @@ then
         "http://www.opensubtitles.org/addons/avi/breakdance.avi"
 fi
 
-find . -type f \( -name "*.py" -o -name "opensub-*" \) | xargs pep8
-
 ls test/test_* | xargs -n1 python
 ls test/test_* | xargs -n1 python3
 
@@ -48,9 +46,3 @@ export http_cache_control="only-if-cached"
 
 python bin/opensub-get -vv -t - >/dev/null -- "$@"
 python3 bin/opensub-get -vv -t - >/dev/null -- "$@"
-
-tmpdir="$( mktemp -d )"
-python bin/opensub-get -vv -t "$tmpdir/test-{num}{subtitle/ext}" -- "$@"
-python3 bin/opensub-get -vv -t "$tmpdir/test3-{num}{subtitle/ext}" -- "$@"
-rm -f -- "$tmpdir"/test*
-rmdir -- "$tmpdir"

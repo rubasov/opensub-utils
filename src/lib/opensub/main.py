@@ -195,8 +195,8 @@ class NamedFile(object):
     def __getattr__(self, attr):
 
         """
-        Delegate attribute lookups to the underlying file
-        in the same manner as tempfile.NamedTemporaryFile does.
+        Delegate attribute lookups to the underlying file in the same manner
+        as tempfile.NamedTemporaryFile does, but without attribute caching.
         """
 
         file = self.__dict__["file"]

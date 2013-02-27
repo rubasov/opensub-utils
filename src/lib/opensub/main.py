@@ -66,13 +66,6 @@ def safe_close(file):
         file.close()
 
 
-def extract_by_xpath(xml_file, xpath, fun=lambda x: x):
-
-    tree = etree.parse(xml_file)
-    lst = [fun(elem) for elem in tree.findall(xpath)]
-    return lst
-
-
 class NamedFile(object):
 
     """
@@ -227,7 +220,7 @@ class UserAgent(object):
             cd_count=cd_count,
             )
 
-        # FIXME use absolute xpath: /search/results/subtitle/download
+        # future FIXME use absolute xpath: /search/results/subtitle/download
         #
         # findall with an absolute xpath is broken in
         # xml.etree.Elementree 1.3.0 . I couldn't find the issue on
@@ -235,11 +228,11 @@ class UserAgent(object):
         # /usr/lib/python2.7/xml/etree/ElementTree.py:745
 
         search_page_xml = self.opener.open(search_page_url)
-        search_results = extract_by_xpath(
-            xml_file=search_page_xml,
-            xpath="./results/subtitle/download",
-            fun=lambda elem: elem.text,
-            )
+
+        tree = etree.parse(search_page_xml)
+        search_results = [elem.text for elem in
+            tree.findall("./results/subtitle/download")]
+
         search_page_xml.close()
 
         return search_results

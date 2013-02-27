@@ -30,58 +30,6 @@ def test_data_dir():
         "test-data")
 
 
-class SimpleXMLTestCase(unittest.TestCase):
-
-    def test__extract_by_xpath__found(self):
-
-        expected = [
-            "http://dl.opensubtitles.org/en/download/subad/4783694",
-            "http://dl.opensubtitles.org/en/download/subad/4651408",
-            "http://dl.opensubtitles.org/en/download/subad/4617272",
-            "http://dl.opensubtitles.org/en/download/subad/4504568",
-            "http://dl.opensubtitles.org/en/download/subad/3650786",
-            "http://dl.opensubtitles.org/en/download/subad/3562667",
-            "http://dl.opensubtitles.org/en/download/subad/93050",
-            "http://dl.opensubtitles.org/en/download/subad/130331",
-            "http://dl.opensubtitles.org/en/download/subad/141364",
-            ]
-
-        test_file = os.path.join(
-            test_data_dir(),
-            "en_search_imdbid-56119_sublanguageid-eng_simplexml.xml")
-        with open(test_file, "r") as f:
-            result_urls = opensub.main.extract_by_xpath(
-                xml_file=f,
-                xpath="./results/subtitle/download",
-                fun=lambda elem: elem.text,
-                )
-
-        self.assertEqual(result_urls, expected)
-
-    def test__extract_by_xpath__not_found(self):
-
-        test_file = os.path.join(
-            test_data_dir(),
-            "en_search_imdbid-0_sublanguageid-eng_simplexml.xml")
-        with open(test_file, "r") as f:
-            result_urls = opensub.main.extract_by_xpath(
-                xml_file=f,
-                xpath="./results/subtitle/download",
-                fun=lambda elem: elem.text,
-                )
-
-        self.assertEqual(result_urls, [])
-
-    def test__extract_by_xpath__junk(self):
-
-        """Search result extraction should fail on malformed documents."""
-
-        test_file = os.path.join(test_data_dir(), "junk.xml")
-        with open(test_file, "r") as f:
-            with self.assertRaises(etree.ParseError):
-                opensub.main.extract_by_xpath(xml_file=f, xpath="junk")
-
-
 class ArchiveTestCase(unittest.TestCase):
 
     def test__extract_subtitles__4130212_zip(self):

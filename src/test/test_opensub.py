@@ -30,9 +30,11 @@ def test_data_dir():
         "test-data")
 
 
-class ArchiveTestCase(unittest.TestCase):
+class LookIntoArchive(unittest.TestCase):
 
-    def test__extract_subtitles__4130212_zip(self):
+    def test__extract_filenames_from_zip(self):
+
+        """Should see filenames in the archive."""
 
         expected = [
             "Birdman of Alcatraz - 1.srt",
@@ -54,7 +56,7 @@ class ArchiveTestCase(unittest.TestCase):
 # test method, but I couldn't bear the repetitive code. In the
 # traceback you'll see which assert failed anyway... -- rubasov
 
-class DefaultTemplateTestCase(unittest.TestCase):
+class DefaultTemplate(unittest.TestCase):
 
     def setUp(self):
 
@@ -132,11 +134,11 @@ class DefaultTemplateTestCase(unittest.TestCase):
 
     def test__empty_string_is_invalid_path(self):
 
-        self._assertRaises("",     "junk", Exception)
-        self._assertRaises("junk", "",     Exception)
+        self._assertRaises("", "junk", Exception)
+        self._assertRaises("junk", "", Exception)
 
 
-class RoundTripTestCase(unittest.TestCase):
+class RoundTrip(unittest.TestCase):
 
     def setUp(self):
 
@@ -148,7 +150,9 @@ class RoundTripTestCase(unittest.TestCase):
         fname = builder.build(video=video, subtitle=subtitle)
         self.assertEqual(os.path.normpath(fname), expected)
 
-    def test__all(self):
+    def test__roundtrip_safety(self):
+
+        """A break-to-pieces-assemble cycle should result in the original."""
 
         self._assertEqual(
             "junk",
@@ -172,7 +176,7 @@ class RoundTripTestCase(unittest.TestCase):
             )
 
 
-class ExtractTestCase(unittest.TestCase):
+class Extract(unittest.TestCase):
 
     def setUp(self):
 
@@ -188,13 +192,13 @@ class ExtractTestCase(unittest.TestCase):
         self.assertEqual(os.path.normpath(fname), "subtitle.srt")
 
 
-class NumTestCase(unittest.TestCase):
+class NumberedTemplate(unittest.TestCase):
 
     def setUp(self):
 
         self.template = "episode{num:02}{subtitle/ext}"
 
-    def test__num(self):
+    def test__number_formatting(self):
 
         builder = opensub.FilenameBuilder(template=self.template)
         fname = builder.build(
@@ -204,7 +208,7 @@ class NumTestCase(unittest.TestCase):
             )
         self.assertEqual(os.path.normpath(fname), "episode07.srt")
 
-    def test__missing_value_for_tpl_var_num(self):
+    def test__missing_value_for_template_variable(self):
 
         builder = opensub.FilenameBuilder(template=self.template)
         with self.assertRaises(Exception):
@@ -214,13 +218,11 @@ class NumTestCase(unittest.TestCase):
                 )
 
 
-class SafeOpenTestCase(unittest.TestCase):
+class SafeOpen(unittest.TestCase):
 
     def test__no_overwrite(self):
 
-        """
-        safe_open should not overwrite existing files.
-        """
+        """safe_open should not overwrite existing files."""
 
         tmpfile = tempfile.NamedTemporaryFile()
         with self.assertRaises(OSError) as cm:

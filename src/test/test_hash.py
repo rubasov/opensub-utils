@@ -42,7 +42,7 @@ def test_data_dir():
         "test-data")
 
 
-class HashTestCase(unittest.TestCase):
+class MovieHash(unittest.TestCase):
 
     def setUp(self):
 
@@ -57,24 +57,29 @@ class HashTestCase(unittest.TestCase):
                 shutil.copyfileobj(src, dst)
             src.close()
 
-    def test__hash_file__breakdance_avi(self):
+    def test__hash_of_breakdance_avi(self):
+
+        """Should produce proper hash via function interface."""
 
         with open(self.test_avi, "rb") as f:
             hash = opensub.hash_file(f)
         self.assertEqual(hash, "8e245d9679d31e12")
 
-    def test__hash_file__file_too_small(self):
+    def test__file_too_small(self):
 
         """
-        File hashing should fail on empty and small files, because the
-        hash algorithm is undefined for files smaller than 128 KiB.
+        Should fail on empty and small files.
+
+        Because the hash is undefined for files < 128 KiB.
         """
 
         with open("/dev/null", "rb") as f:
             with self.assertRaises(Exception):
                 opensub.hash_file(f)
 
-    def test__opensub_hash__breakdance_avi(self):
+    def test__cli_breakdance_avi(self):
+
+        """Should produce proper hash via command line interface."""
 
         expected = "8e245d9679d31e12 {}\n".format(self.test_avi).encode("utf8")
 
@@ -85,15 +90,34 @@ class HashTestCase(unittest.TestCase):
 
         self.assertEqual(out, expected)
 
-    def test__opensub_hash__no_such_file(self):
+    def test__cli_no_such_file(self):
 
-        exit_code = os.system("{} {} {}".format(
-            sys.executable,
-            os.path.join(bin_dir(), "opensub-hash"),
-            "non-existent",
-            ))
+        """Should exit with non-zero for non-existent files."""
+
+        exit_code = os.system(
+            "{python} {script} no-such-file".format(
+                python=sys.executable,
+                script=os.path.join(bin_dir(), "opensub-hash"),
+                ))
 
         self.assertTrue(exit_code != 0)
+
+    def test__cli_handle_errors_gracefully(self):
+
+        """Process files despite previous error."""
+
+        expected = "8e245d9679d31e12 {}\n".format(self.test_avi).encode("utf8")
+
+        out = subprocess.check_output(
+            "{python} {script} no-such-file {test_avi} || true".format(
+                python=sys.executable,
+                script=os.path.join(bin_dir(), "opensub-hash"),
+                test_avi=self.test_avi,
+                ),
+            shell=True,
+            )
+
+        self.assertEqual(out, expected)
 
 
 if __name__ == "__main__":

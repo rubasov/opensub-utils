@@ -135,20 +135,6 @@ class DefaultTemplateTestCase(unittest.TestCase):
         self._assertRaises("",     "junk", Exception)
         self._assertRaises("junk", "",     Exception)
 
-    def test__dir_like_path_is_invalid(self):
-
-        self._assertRaises(".",                 "junk", Exception)
-        self._assertRaises("..",                "junk", Exception)
-        self._assertRaises(join("", ""),        "junk", Exception)
-        self._assertRaises(join("", "dir", ""), "junk", Exception)
-        self._assertRaises(join("dir", ".."),   "junk", Exception)
-
-        self._assertRaises("junk", ".",                 Exception)
-        self._assertRaises("junk", "..",                Exception)
-        self._assertRaises("junk", join("", ""),        Exception)
-        self._assertRaises("junk", join("", "dir", ""), Exception)
-        self._assertRaises("junk", join("dir", ".."),   Exception)
-
 
 class RoundTripTestCase(unittest.TestCase):
 

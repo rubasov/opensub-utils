@@ -421,6 +421,12 @@ class FilenameBuilder(object):
 
     Later, I ended up with a much more generic templating. For details
     see NAMING SCHEMES in the manual of opensub-get.
+
+    NOTE We do not protect our user from silly combinations of
+         templates and input filenames like:
+
+    template  : {video/dir}{video/base}{subtitle/ext}
+    filenames : /dir/ + subtitle.srt -> /dir/.srt
     """
 
     def __init__(self, template="{video/dir}{video/base}{subtitle/ext}"):
@@ -454,23 +460,10 @@ class FilenameBuilder(object):
             raise Exception("invalid path: empty string")
 
         head, tail = os.path.split(path)
-        dir = os.path.join(head, "")  # (1)
+
+        # os.path.split stripped trailing slashes, we have to add them back
+        dir = os.path.join(head, "")
         base, ext = os.path.splitext(tail)
-
-        # NOTE (1) os.path.split strips trailing (back)slashes,
-        #          we have to add them back
-
-        if tail in ("", ".", ".."):  # (2)
-            raise Exception(
-                "invalid (dir-like) path: {}".format(path))
-
-        # NOTE (2) path looks like a dir, in unix terms:
-        #                 path ends in /
-        #              or last component of path is .
-        #              or last component of path is ..
-        #
-        # We reject dir-like paths, because they can too easily lead
-        # to hideous things like: /dir/ + subtitle.srt -> /dir/.srt
 
         return dir, base, ext
 

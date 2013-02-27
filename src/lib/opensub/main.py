@@ -68,9 +68,7 @@ def safe_close(file):
 
 class NamedFile(object):
 
-    """
-    File-like object with a name attribute.
-    """
+    """File-like object with a name attribute."""
 
     def __init__(self, file, name):
 
@@ -84,8 +82,7 @@ class NamedFile(object):
         as tempfile.NamedTemporaryFile does, but without attribute caching.
         """
 
-        file = self.__dict__["file"]
-        return getattr(file, attr)
+        return getattr(self.__dict__["file"], attr)
 
 
 def hash_file(file, file_size=None):
@@ -281,12 +278,14 @@ class SubtitleArchive(object):
         ):
 
         """
-        Prefer using it as a context manager: with SubtitleArchive() as ...
+        Should use it as a context manager:
+            with SubtitleArchive() as archive:
+                ...
 
         Takes:
             url - url of the subtitle archive
             opener - urllib(2) opener object
-            sort_key - yield order of subtitles
+            sort_key - determines yield order of subtitles
             extensions - iterable of valid subtitle extensions
                 lower case, include leading dot
         """
@@ -319,7 +318,7 @@ class SubtitleArchive(object):
     def _urlopen_via_tempfile(self):
 
         # zipfile needs a seekable file-like objects.
-        # Therefore we cache the remote file in a local temporary file.
+        # Therefore we download the remote file to a local temporary file.
 
         # See the notes here on why we need a *Named*TemporaryFile:
         # http://docs.python.org/2/library/zipfile#zipfile.ZipFile.open
@@ -445,7 +444,6 @@ class FilenameBuilder(object):
         Split a file path 3-way.
 
         Example:
-
             path : foo/bar/baz.qux
 
             dir  : foo/bar/
@@ -453,7 +451,7 @@ class FilenameBuilder(object):
             ext  : .qux
 
         The concatenation of dir, base and ext add up to a path
-        equivalent to the original.
+        equivalent to the original (roundtrip safety).
         """
 
         if path == "":
@@ -461,7 +459,8 @@ class FilenameBuilder(object):
 
         head, tail = os.path.split(path)
 
-        # os.path.split stripped trailing slashes, we have to add them back
+        # os.path.split stripped trailing slashes,
+        # we have to add them back for roundtrip safety.
         dir = os.path.join(head, "")
         base, ext = os.path.splitext(tail)
 

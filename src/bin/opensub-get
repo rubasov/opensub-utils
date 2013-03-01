@@ -186,7 +186,7 @@ def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
     args = docopt.docopt(doc, version=version, argv=argv)
 
     if args["--man"]:
-        print(__doc__, __doc_rest__)
+        print(__doc__ + __doc_rest__)
         sys.exit(0)
 
     if args["--extract"]:

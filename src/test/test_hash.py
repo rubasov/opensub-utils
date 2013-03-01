@@ -71,7 +71,7 @@ class MovieHash(unittest.TestCase):
         Because the hash is undefined for files < 128 KiB.
         """
 
-        with open("/dev/null", "rb") as f:
+        with open(os.devnull, "rb") as f:
             with self.assertRaises(Exception):
                 opensub.hash_file(f)
 

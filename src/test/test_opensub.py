@@ -19,7 +19,7 @@ import opensub
 import opensub.main
 
 
-def test_data_dir():
+def _test_data_dir():
 
     return os.path.join(
         os.path.dirname(
@@ -39,7 +39,7 @@ class LookIntoArchive(unittest.TestCase):
             "Birdman of Alcatraz - 2.srt",
             ]
 
-        test_file = os.path.join(test_data_dir(), "4130212.zip")
+        test_file = os.path.join(_test_data_dir(), "4130212.zip")
 
         with open(test_file, "rb") as tfile:
 
@@ -67,6 +67,8 @@ class DefaultTemplate(unittest.TestCase):
         self.assertEqual(os.path.normpath(fname), expected)
 
     def test__combinations(self):
+
+        """Zillion combinations of templating input."""
 
         self._assertEqual(
             "video.avi",
@@ -132,6 +134,8 @@ class DefaultTemplate(unittest.TestCase):
 
     def test__empty_string_is_invalid_path(self):
 
+        """Fail on empty string."""
+
         self._assertRaises("", "junk", Exception)
         self._assertRaises("junk", "", Exception)
 
@@ -182,6 +186,8 @@ class Extract(unittest.TestCase):
 
     def test__extract_to_current_dir(self):
 
+        """Extract subtitles by their original names."""
+
         builder = opensub.FilenameBuilder(template=self.template)
         fname = builder.build(
             video="junk",
@@ -198,6 +204,8 @@ class NumberedTemplate(unittest.TestCase):
 
     def test__number_formatting(self):
 
+        """Can use numbered templates."""
+
         builder = opensub.FilenameBuilder(template=self.template)
         fname = builder.build(
             video="junk",
@@ -207,6 +215,8 @@ class NumberedTemplate(unittest.TestCase):
         self.assertEqual(os.path.normpath(fname), "episode07.srt")
 
     def test__missing_value_for_template_variable(self):
+
+        """Fail on missing value for template variable."""
 
         builder = opensub.FilenameBuilder(template=self.template)
         with self.assertRaises(Exception):
@@ -220,7 +230,7 @@ class SafeOpen(unittest.TestCase):
 
     def test__no_overwrite(self):
 
-        """safe_open should not overwrite existing files."""
+        """Do not overwrite existing files by default."""
 
         tmpfile = tempfile.NamedTemporaryFile()
         with self.assertRaises(OSError) as cm:
@@ -233,10 +243,12 @@ class BinaryStdoutTestCase(unittest.TestCase):
 
     def test__binary_write(self):
 
+        """Write binary data to stdout."""
+
         try:
             opensub.main.binary_stdout().write(b"")
         except TypeError:
-            self.fail("should be able to write binary data")
+            self.fail("couldn't write binary data")
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import os
 import unittest
 
 
-def repo_root_dir():
+def _repo_root_dir():
 
     return os.path.realpath(
         os.path.join(
@@ -12,7 +12,7 @@ def repo_root_dir():
             os.pardir))
 
 
-class Pep8ConformanceTestCase(unittest.TestCase):
+class Pep8Conformance(unittest.TestCase):
 
     """
     Check PEP8 conformance of all Python source files in this repo.
@@ -30,17 +30,22 @@ class Pep8ConformanceTestCase(unittest.TestCase):
 
     def test__scripts(self):
 
-        """pep8 bin/*"""
+        """pep8 bin/opensub-*"""
 
         exit_status = os.system(
-            "pep8 {}".format(os.path.join(repo_root_dir(), "bin", "*")))
+            "pep8 {}".format(
+                os.path.join(
+                    _repo_root_dir(),
+                    "bin",
+                    "opensub-*",
+                    )))
         self.assertEqual(exit_status, 0)
 
     def test__modules(self):
 
         """pep8 **/*.py"""
 
-        exit_status = os.system("pep8 {}".format(repo_root_dir()))
+        exit_status = os.system("pep8 {}".format(_repo_root_dir()))
         self.assertEqual(exit_status, 0)
 
 

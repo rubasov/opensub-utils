@@ -7,7 +7,6 @@ redesign
         SearchResult ?= SubtitleCollection
     how well your design hid that the search interface is suboptimal?
         think about the ideal file-by-file search
-    break util.py into proper modules
     consider using xml-rpc search
 packaging
     how to use git versions automatically?
@@ -20,11 +19,9 @@ upload to github
     ask for review by opensubtitles folks
     README
     INSTALL
+    MANIFEST
 test
-    safe_open(), extract_archive()
-    how to improve branch coverage
-        how to make sure both python2 and 3 have seen all code branches?
-            without doubly testing everything
+    eliminate test/run.sh
 user interface
     direct input of movie hash?
     select 2nd, 3rd, etc. search result
@@ -37,6 +34,8 @@ user interface
             environment variable?
                 use LANGUAGE ??
 document
+    public interface
+      __init__.py
     design document
       choices
       decisions
@@ -49,6 +48,7 @@ document
        buildtime deps
             nose?
     unix only?
+bug tracker
 
 find /home/rubasov/m/movie/ -iname '*.avi' -print0 | sort -z | xargs -0 -n1 dirname | uniq -d | xargs -d \\n -I {} find {} -iname '*.avi' | xargs -d \\n opensub-hash | sort -k2
 http://trac.opensubtitles.org/projects/opensubtitles/wiki/OSDb

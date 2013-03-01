@@ -31,13 +31,13 @@ import sys
 
 import docopt
 
+# FIXME explain why this is here
 sys.path.append(
     os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
+        os.path.dirname(__file__),
         os.pardir,
-        "lib"))
+        "lib",
+        ))
 
 import opensub
 

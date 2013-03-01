@@ -7,13 +7,13 @@ import unittest
 
 from os.path import join
 
+# FIXME explain why this is here
 sys.path.append(
     os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
+        os.path.dirname(__file__),
         os.pardir,
-        "lib"))
+        "lib",
+        ))
 
 import opensub
 import opensub.main
@@ -22,10 +22,9 @@ import opensub.main
 def _test_data_dir():
 
     return os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
-        "test-data")
+        os.path.dirname(__file__),
+        "test-data",
+        )
 
 
 class LookIntoArchive(unittest.TestCase):

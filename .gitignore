@@ -4,8 +4,4 @@
 *.pyc
 __pycache__/
 
-build/
-dist/
-*.egg-info/
-
 src/test/test-data/breakdance.avi

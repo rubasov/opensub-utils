@@ -10,13 +10,13 @@ if six.PY3:
 else:
     import urllib2 as urllib_request
 
+# FIXME explain why this is here
 sys.path.append(
     os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
+        os.path.dirname(__file__),
         os.pardir,
-        "lib"))
+        "lib",
+        ))
 
 import opensub
 
@@ -24,20 +24,18 @@ import opensub
 def _bin_dir():
 
     return os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
+        os.path.dirname(__file__),
         os.pardir,
-        "bin")
+        "bin",
+        )
 
 
 def _test_data_dir():
 
     return os.path.join(
-        os.path.dirname(
-            os.path.realpath(
-                __file__)),
-        "test-data")
+        os.path.dirname(__file__),
+        "test-data",
+        )
 
 
 class MovieHash(unittest.TestCase):

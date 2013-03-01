@@ -9,7 +9,7 @@ def repo_root_dir():
             os.path.dirname(
                 os.path.realpath(
                     __file__)),
-            ".."))
+            os.pardir))
 
 
 class Pep8ConformanceTestCase(unittest.TestCase):

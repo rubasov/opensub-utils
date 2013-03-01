@@ -10,10 +10,12 @@ redesign
     break util.py into proper modules
     consider using xml-rpc search
 packaging
-    setup.py
     how to use git versions automatically?
         version templating in a separate file
         changelog generation
+    improve setup.py
+        http://docs.python.org/2/distutils/setupscript.html#additional-meta-data
+        http://docs.python.org/2/distutils/apiref.html#distutils.core.setup
 upload to github
     ask for review by opensubtitles folks
     README

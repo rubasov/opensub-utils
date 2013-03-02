@@ -11,7 +11,7 @@ else:
     import urllib2 as urllib_request
 
 # FIXME explain why this is here
-sys.path.append(
+sys.path.insert(0,
     os.path.join(
         os.path.dirname(__file__),
         os.pardir,

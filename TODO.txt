@@ -40,6 +40,7 @@ document
       choices
       decisions
       benefits, drawbacks
+    release procedure
     dependencies and portability
         python versions: 2.7/3.2
         runtime deps
@@ -48,6 +49,13 @@ document
        buildtime deps
             nose?
     unix only?
+misc
+    hashbang lines are non-portable between python2 and python3
+        template them? barf...
+    revert what's in the version branch
+        instead template a file containing the output of git describe only
+        through a git hook on git archive and read this version file
+        from setup.py; at runtime use the egg version
 bug tracker
 
 find /home/rubasov/m/movie/ -iname '*.avi' -print0 | sort -z | xargs -0 -n1 dirname | uniq -d | xargs -d \\n -I {} find {} -iname '*.avi' | xargs -d \\n opensub-hash | sort -k2

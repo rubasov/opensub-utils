@@ -75,7 +75,7 @@ template : test
 	@ $(git) log --decorate "$(version)" "$(version)^@" \
 	    > "$(template_dir)/$(dist_name)/changelog"
 
-	$(sed) -i -e "s/\[% *version *%\]/$(version)/g" \
+	@ $(sed) -i -e "s/\[% *version *%\]/$(version)/g" \
 	    "$(template_dir)/$(dist_name)/src/lib/opensub/version.py"
 
 	@ # TODO early abort based on bash exit code

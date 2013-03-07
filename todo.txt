@@ -9,19 +9,14 @@ redesign
         think about the ideal file-by-file search
     consider using xml-rpc search
 packaging
-    how to use git versions automatically?
-        version templating in a separate file
-        changelog generation
     improve setup.py
         http://docs.python.org/2/distutils/setupscript.html#additional-meta-data
         http://docs.python.org/2/distutils/apiref.html#distutils.core.setup
 upload to github
     ask for review by opensubtitles folks
-    README
-    INSTALL
+    readme.md
+    install.md
     MANIFEST
-test
-    eliminate test/run.sh
 user interface
     direct input of movie hash?
     select 2nd, 3rd, etc. search result
@@ -40,22 +35,12 @@ document
       choices
       decisions
       benefits, drawbacks
-    release procedure
     dependencies and portability
         python versions: 2.7/3.2
-        runtime deps
-            six
-            docopt
-       buildtime deps
-            nose?
     unix only?
 misc
     hashbang lines are non-portable between python2 and python3
         template them? barf...
-    revert what's in the version branch
-        instead template a file containing the output of git describe only
-        through a git hook on git archive and read this version file
-        from setup.py; at runtime use the egg version
     use properly sortable version numbers
         be compatible with
             http://wiki.python.org/moin/Distutils/VersionComparison

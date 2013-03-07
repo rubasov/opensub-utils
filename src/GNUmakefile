@@ -9,7 +9,8 @@
 # Test install new release:
 #     git checkout TAG_TO_BE_RELEASED
 #     make debug=1
-#     python opensub-utils-*/src/setup.py install --user
+#     cd opensub-utils-*/src/
+#     python setup.py install --user
 
 
 ## global config
@@ -96,3 +97,5 @@ tarball : template
 	@ tar -cz -C "$(template_dir)" "$(dist_name)" \
 	    > "$(dist_name).tar.gz"
 	-@ rm -rf $(template_dir);
+
+# TODO the test suite should work in the extracted tarball too, shouldn't it?

@@ -42,16 +42,7 @@ class MovieHash(unittest.TestCase):
 
     def setUp(self):
 
-        """Download breakdance.avi, if we don't have it yet."""
-
         self.test_avi = os.path.join(_test_data_dir(), "breakdance.avi")
-
-        if not os.path.exists(self.test_avi):
-            src = urllib_request.urlopen(
-                "http://www.opensubtitles.org/addons/avi/breakdance.avi")
-            with open(self.test_avi, "wb") as dst:
-                shutil.copyfileobj(src, dst)
-            src.close()
 
     def test__hash_of_breakdance_avi(self):
 

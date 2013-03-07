@@ -11,7 +11,7 @@ $ sudo apt-get install polipo # it listens at 127.0.0.1:8123
 You may also want to populate the cache, before running this script:
 
 http_proxy=127.0.0.1:8123 ./bin/opensub-get -vv -t - >/dev/null ...
- 
+
 export http_proxy=127.0.0.1:8123
 export http_cache_control="only-if-cached"
 

@@ -1,4 +1,4 @@
-# This Makefile is to cut a new release, not to install the software.
+# This makefile is to cut a new release, not to install the software.
 #
 # For installation instructions see 'install.md'.
 
@@ -49,7 +49,7 @@ test/test-data/breakdance.avi :
 test-data : test/test-data/breakdance.avi
 
 .PHONY : test
-test :
+test : test-data
 	@ nosetests
 
 # FIXME Shall we work out of a remote repo?
@@ -96,6 +96,7 @@ template : test
 tarball : template
 	@ tar -cz -C "$(template_dir)" "$(dist_name)" \
 	    > "$(dist_name).tar.gz"
+	@ echo tarball = "$(dist_name).tar.gz"
 	-@ rm -rf $(template_dir);
 
 # TODO the test suite should work in the extracted tarball too, shouldn't it?

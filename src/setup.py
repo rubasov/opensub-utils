@@ -1,4 +1,16 @@
+import os
 import setuptools
+import sys
+
+# FIXME explain why this is here
+sys.path.insert(0,
+    os.path.join(
+        os.path.dirname(__file__),
+        "lib",
+        ))
+
+import opensub.version
+
 
 setuptools.setup(
     author="Bence Romsics",
@@ -25,6 +37,6 @@ setuptools.setup(
         "nose",
         ],
     url="http://github.com/rubasov/...",  # FIXME
-    version="0.9",  # FIXME
+    version=opensub.version.__version__,
     zip_safe=False,
     )

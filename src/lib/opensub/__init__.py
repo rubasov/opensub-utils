@@ -1,5 +1,7 @@
 """Public interface."""
 
+from .version import __version__
+
 # classes
 from .main import FilenameBuilder
 from .main import SubtitleArchive

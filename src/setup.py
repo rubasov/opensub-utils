@@ -32,7 +32,7 @@ setuptools.setup(
         "bin/opensub-get",
         "bin/opensub-hash",
         ],
-    test_suite="nose.collector",
+    #test_suite="nose.collector",  # FIXME
     tests_require=[
         "nose",
         ],

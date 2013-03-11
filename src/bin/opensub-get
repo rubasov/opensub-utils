@@ -289,6 +289,7 @@ def main():
 
     try:
         preferred_result = search_results[0]
+
     except IndexError:
         logging.error("subtitle not found")
         sys.stdout.flush()

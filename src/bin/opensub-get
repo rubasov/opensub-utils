@@ -251,7 +251,7 @@ def default_opener(version, program=sys.argv[0]):
     return opener
 
 
-def print_not_found_hint(file):
+def print_not_found_hint(file_):
 
     msg = textwrap.dedent(
         """
@@ -267,7 +267,7 @@ def print_not_found_hint(file):
                http://www.opensubtitles.org/upload/
         """
         )
-    file.write(msg)
+    file_.write(msg)
 
 
 def main():

@@ -58,21 +58,21 @@ def safe_open(path, overwrite=False):
         return os.fdopen(fd, "wb")
 
 
-def safe_close(file):
+def safe_close(file_):
 
     """Close anything, but stdout."""
 
-    if file != binary_stdout():
-        file.close()
+    if file_ != binary_stdout():
+        file_.close()
 
 
 class NamedFile(object):
 
     """File-like object with a name attribute."""
 
-    def __init__(self, file, name):
+    def __init__(self, file_, name):
 
-        self.file = file
+        self.file_ = file_
         self.name = name
 
     def __getattr__(self, attr):
@@ -82,10 +82,10 @@ class NamedFile(object):
         as tempfile.NamedTemporaryFile does, but without attribute caching.
         """
 
-        return getattr(self.__dict__["file"], attr)
+        return getattr(self.__dict__["file_"], attr)
 
 
-def hash_file(file, file_size=None):
+def hash_file(file_, file_size=None):
 
     """
     Hash an open file.
@@ -112,32 +112,32 @@ def hash_file(file, file_size=None):
 
     assert chunk_size % buf_size == 0
 
-    def chunk(hash, seek_args):
-        file.seek(*seek_args)
+    def chunk(hash_, seek_args):
+        file_.seek(*seek_args)
         for _ in range(chunk_size // buf_size):
-            buf = file.read(buf_size)
-            hash += struct.unpack(fmt, buf)[0]
-            hash &= 0xFFFFFFFFFFFFFFFF  # to remain as 64 bit number
-        return hash
+            buf = file_.read(buf_size)
+            hash_ += struct.unpack(fmt, buf)[0]
+            hash_ &= 0xFFFFFFFFFFFFFFFF  # to remain as 64 bit number
+        return hash_
 
-    saved_pos = file.tell()
+    saved_pos = file_.tell()
     try:
         if file_size is None:
-            file.seek(0, os.SEEK_END)
-            file_size = file.tell()
+            file_.seek(0, os.SEEK_END)
+            file_size = file_.tell()
 
         if file_size < 2 * chunk_size:
             raise Exception(
                 "file too small: < {} bytes".format(2 * chunk_size))
 
-        hash = file_size
-        hash = chunk(hash, seek_args=(0, os.SEEK_SET))
-        hash = chunk(hash, seek_args=(-chunk_size, os.SEEK_END))
+        hash_ = file_size
+        hash_ = chunk(hash_, seek_args=(0, os.SEEK_SET))
+        hash_ = chunk(hash_, seek_args=(-chunk_size, os.SEEK_END))
 
     finally:
-        file.seek(saved_pos, os.SEEK_SET)
+        file_.seek(saved_pos, os.SEEK_SET)
 
-    hex_str = "{:016x}".format(hash)
+    hex_str = "{:016x}".format(hash_)
     logging.info("hash: {}".format(hex_str))
     return hex_str
 
@@ -206,8 +206,8 @@ class UserAgent(object):
             list of subtitle archive URLs (ordered as in the search results)
         """
 
-        with open(movie[0], "rb") as f:
-            movie_hash = hash_file(f)
+        with open(movie[0], "rb") as file_:
+            movie_hash = hash_file(file_)
 
         cd_count = len(movie)
 
@@ -461,10 +461,10 @@ class FilenameBuilder(object):
 
         # os.path.split stripped trailing slashes,
         # we have to add them back for roundtrip safety.
-        dir = os.path.join(head, "")
+        dir_ = os.path.join(head, "")
         base, ext = os.path.splitext(tail)
 
-        return dir, base, ext
+        return dir_, base, ext
 
     def build(self, video=None, subtitle=None, num=None):
 

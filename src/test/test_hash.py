@@ -57,8 +57,8 @@ class MovieHash(unittest.TestCase):
 
         """Calculate proper hash via function interface."""
 
-        with open(self.test_avi, "rb") as f:
-            hash = opensub.hash_file(f)
+        with open(self.test_avi, "rb") as file_:
+            hash = opensub.hash_file(file_)
         self.assertEqual(hash, "8e245d9679d31e12")
 
     def test__file_too_small(self):
@@ -69,9 +69,9 @@ class MovieHash(unittest.TestCase):
         Because the hash is undefined for files < 128 KiB.
         """
 
-        with open(os.devnull, "rb") as f:
+        with open(os.devnull, "rb") as file_:
             with self.assertRaises(Exception):
-                opensub.hash_file(f)
+                opensub.hash_file(file_)
 
     def test__cli_breakdance_avi(self):
 

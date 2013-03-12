@@ -23,6 +23,7 @@ Credits:
 """
 
 import errno
+import logging
 import os
 import sys
 
@@ -50,7 +51,8 @@ def main():
         try:
             with open(path, "rb") as f:
                 print("{} {}".format(opensub.hash_file(f), path))
-        except:
+        except Exception as e:
+            logging.error(e)
             exit_code = 1
 
     sys.exit(exit_code)

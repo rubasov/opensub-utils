@@ -2,7 +2,6 @@ import errno
 import os
 import sys
 import tempfile
-import xml.etree.ElementTree as etree
 import unittest
 
 from os.path import join

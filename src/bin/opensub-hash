@@ -22,7 +22,6 @@ Credits:
     Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
 """
 
-import errno
 import logging
 import os
 import sys

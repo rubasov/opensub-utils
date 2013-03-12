@@ -1,0 +1,59 @@
+#! /bin/sh
+
+set -e
+set -u
+
+##
+
+print_usage () {
+cat <<USAGE
+Test install latest release.
+
+Usage:
+    git checkout TAG_TO_BE_RELEASED
+    $0
+USAGE
+}
+
+##
+
+if [ $# -eq 1 ]
+then
+    if [ "$1" = "-h" -o "$1" = "--help" ]
+    then
+        print_usage
+        exit 0
+    fi
+fi
+
+##
+
+nosetests=nosetests-2.7
+python=python2.7
+
+version="$( git describe )"
+
+##
+
+repo_root="$( dirname "$0" )"/../..
+cd "$repo_root"
+
+$nosetests
+
+build_dir="$( mktemp -d )"
+git archive --format=tar "$version" | tar -x -C "$build_dir"
+
+##
+
+cd "$build_dir"/src
+$python setup.py --quiet install --user
+
+##
+
+rm -rf -- "${build_dir:?}"
+
+##
+
+echo "opensub" $( $python -m opensub.version )
+echo "opensub-get" $( opensub-get --version )
+echo "opensub-hash" $( opensub-hash --version )

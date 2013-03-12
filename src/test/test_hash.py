@@ -59,8 +59,8 @@ class MovieHash(unittest.TestCase):
         """Calculate proper hash via function interface."""
 
         with open(self.test_avi, "rb") as file_:
-            hash = opensub.hash_file(file_)
-        self.assertEqual(hash, self.test_avi_correct_hash)
+            hash_ = opensub.hash_file(file_)
+        self.assertEqual(hash_, self.test_avi_correct_hash)
 
     def test__file_too_small(self):
 

@@ -353,8 +353,8 @@ class SubtitleArchive(object):
             if ext.lower() not in self.extensions:
                 continue
 
-            with self.zipfile.open(name) as f:
-                yield NamedFile(f, name)
+            with self.zipfile.open(name) as file_:
+                yield NamedFile(file_, name)
 
     def extract(self, movie, builder, overwrite=False):
 

@@ -48,8 +48,8 @@ def main():
     for path in args["<video-files>"]:
 
         try:
-            with open(path, "rb") as f:
-                print("{} {}".format(opensub.hash_file(f), path))
+            with open(path, "rb") as file_:
+                print("{} {}".format(opensub.hash_file(file_), path))
         except Exception as e:
             logging.error(e)
             exit_code = 1

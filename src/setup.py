@@ -9,7 +9,7 @@ sys.path.insert(0,
         "lib",
         ))
 
-import opensub.version
+import opensub
 
 
 setuptools.setup(
@@ -37,6 +37,6 @@ setuptools.setup(
         "nose",
         ],
     url="http://github.com/rubasov/...",  # FIXME
-    version=opensub.version.__version__,
+    version=opensub.__version__,
     zip_safe=False,
     )

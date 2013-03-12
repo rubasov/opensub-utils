@@ -37,7 +37,7 @@ sys.path.insert(0,
         ))
 
 import opensub
-from opensub.version import __version__
+from opensub import __version__
 
 
 def main():

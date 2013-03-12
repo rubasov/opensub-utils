@@ -45,6 +45,7 @@ class MovieHash(unittest.TestCase):
         """Download breakdance.avi, if we don't have it yet."""
 
         self.test_avi = os.path.join(_test_data_dir(), "breakdance.avi")
+        self.test_avi_correct_hash = "8e245d9679d31e12"
 
         if not os.path.exists(self.test_avi):
             src = urllib_request.urlopen(
@@ -59,7 +60,7 @@ class MovieHash(unittest.TestCase):
 
         with open(self.test_avi, "rb") as file_:
             hash = opensub.hash_file(file_)
-        self.assertEqual(hash, "8e245d9679d31e12")
+        self.assertEqual(hash, self.test_avi_correct_hash)
 
     def test__file_too_small(self):
 
@@ -77,7 +78,8 @@ class MovieHash(unittest.TestCase):
 
         """Calculate proper hash via command line interface."""
 
-        expected = "8e245d9679d31e12 {}\n".format(self.test_avi).encode("utf8")
+        expected = "{} {}\n".format(
+            self.test_avi_correct_hash, self.test_avi).encode("utf8")
 
         out = subprocess.check_output([
             sys.executable,
@@ -102,7 +104,8 @@ class MovieHash(unittest.TestCase):
 
         """Hash files despite previous error."""
 
-        expected = "8e245d9679d31e12 {}\n".format(self.test_avi).encode("utf8")
+        expected = "{} {}\n".format(
+            self.test_avi_correct_hash, self.test_avi).encode("utf8")
 
         out = subprocess.check_output(
             "{python} {script} no-such-file {test_avi} 2>/dev/null || true"

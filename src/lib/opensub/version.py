@@ -14,8 +14,7 @@ Version of the opensub-utils distribution.
 # DO NOT FORGET TO TAG:
 # python lib/opensub/version.py | xargs -r -I {} git tag -a {} -m {}
 
-__version_info__ = ("0", "9", "5")
-__version__ = ".".join(__version_info__)
+__version__ = "0.9.6"
 
 if __name__ == "__main__":
 

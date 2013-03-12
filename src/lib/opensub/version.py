@@ -1,4 +1,4 @@
-"""This file is templated by the release makefile."""
+"""This file is templated at release time."""
 
 __version__ = "[% version %]"
 

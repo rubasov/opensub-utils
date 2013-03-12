@@ -91,7 +91,7 @@ class MovieHash(unittest.TestCase):
         """Exit with non-zero for non-existent files."""
 
         exit_code = os.system(
-            "{python} {script} no-such-file".format(
+            "{python} {script} no-such-file 2>/dev/null".format(
                 python=sys.executable,
                 script=os.path.join(_bin_dir(), "opensub-hash"),
                 ))
@@ -105,11 +105,12 @@ class MovieHash(unittest.TestCase):
         expected = "8e245d9679d31e12 {}\n".format(self.test_avi).encode("utf8")
 
         out = subprocess.check_output(
-            "{python} {script} no-such-file {test_avi} || true".format(
-                python=sys.executable,
-                script=os.path.join(_bin_dir(), "opensub-hash"),
-                test_avi=self.test_avi,
-                ),
+            "{python} {script} no-such-file {test_avi} 2>/dev/null || true"
+                .format(
+                    python=sys.executable,
+                    script=os.path.join(_bin_dir(), "opensub-hash"),
+                    test_avi=self.test_avi,
+                    ),
             shell=True,
             )
 

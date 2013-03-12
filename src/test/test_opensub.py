@@ -218,7 +218,7 @@ class NumberedTemplate(unittest.TestCase):
 
         builder = opensub.FilenameBuilder(template=self.template)
         with self.assertRaises(Exception):
-            fname = builder.build(
+            builder.build(
                 video="junk",
                 subtitle="subtitle.srt",
                 )

@@ -3,7 +3,7 @@
 """
 Usage:
     opensub-get (-h | --help)
-    opensub-get (-m | --man)
+    opensub-get (-m | --manual)
     opensub-get (-V | --version)
     opensub-get [-v | -vv]
                 [-f | --force]
@@ -15,7 +15,7 @@ Usage:
 
 Options:
     -h, --help     Print usage and exit.
-    -m, --man      Print full manual and exit.
+    -m, --manual   Print full manual and exit.
     -V, --version  Print version and exit.
 
     -v, --verbose  Increase verbosity. May be used twice (-vv).
@@ -30,12 +30,12 @@ Options:
     -x, --extract
         Extract output files as they are.
         Mutually exclusive with --template.
-        See NAMING SCHEMES in manual (--man).
+        See NAMING SCHEMES in manual (--manual).
 
     -t <template>, --template=<template>
         Name output files according to template.
         Mutually exclusive with --extract.
-        See NAMING SCHEMES in manual (--man).
+        See NAMING SCHEMES in manual (--manual).
         [default: {video/dir}{video/base}{subtitle/ext}]
 """
 
@@ -187,7 +187,7 @@ def parse_args(doc=__doc__, version=__version__, argv=sys.argv[1:]):
 
     args = docopt.docopt(doc, version=version, argv=argv)
 
-    if args["--man"]:
+    if args["--manual"]:
         print(__doc__ + __doc_rest__)
         sys.exit(0)
 

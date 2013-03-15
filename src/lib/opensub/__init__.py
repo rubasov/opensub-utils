@@ -1,4 +1,8 @@
-"""Public interface."""
+"""
+Public interface.
+
+See documentation in the respective source files.
+"""
 
 from .version import __version__
 

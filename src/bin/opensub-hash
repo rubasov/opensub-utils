@@ -2,7 +2,7 @@
 
 """
 Usage:
-    opensub-get [-h|--help] [--version] [--] <video-files>...
+    opensub-hash [-h|--help] [--version] [--] <video-files>...
 
 Description:
     opensub-hash - Print hash of video files.

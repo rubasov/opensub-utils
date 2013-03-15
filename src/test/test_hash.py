@@ -4,7 +4,12 @@ import subprocess
 import sys
 import unittest
 
-import six
+try:
+    import six
+except ImportError:
+    class six(object):
+        PY3 = False
+
 if six.PY3:
     import urllib.request as urllib_request
 else:

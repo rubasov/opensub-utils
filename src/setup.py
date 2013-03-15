@@ -31,7 +31,6 @@ setuptools.setup(
     description="CLI utilities for opensubtitles.org.",
     install_requires=[
         "docopt",
-        "six",
         ],
     name="opensub",
     package_dir={

@@ -7,10 +7,10 @@ set -u
 
 print_usage () {
 cat <<USAGE
-Test install latest release.
+Test install latest release (i.e. what git describe finds).
 
 Usage:
-    git checkout TAG_TO_BE_RELEASED
+    git checkout TAG_TO_BE_TEST_INSTALLED
     $0
 USAGE
 }

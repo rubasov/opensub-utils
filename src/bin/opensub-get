@@ -142,7 +142,7 @@ See Also:
 
 Credits:
     Many thanks to opensubtitles.org's folks for their great service.
-    Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
+    Copyright (c) 2013 Bence Romsics <rubasov+opensub@gmail.com>
 """
 
 import logging

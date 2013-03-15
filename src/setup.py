@@ -16,7 +16,7 @@ import opensub
 
 setuptools.setup(
     author="Bence Romsics",
-    author_email="rubasov@gmail.com",
+    author_email="rubasov+opensub@gmail.com",
     description="CLI utilities for opensubtitles.org.",
     install_requires=[
         "docopt",

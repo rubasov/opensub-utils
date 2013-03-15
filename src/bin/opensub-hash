@@ -19,7 +19,7 @@ See Also:
     * http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
 Credits:
-    Copyright (c) 2013 Bence Romsics <rubasov@gmail.com>
+    Copyright (c) 2013 Bence Romsics <rubasov+opensub@gmail.com>
 """
 
 import logging

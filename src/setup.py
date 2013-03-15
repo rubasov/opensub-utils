@@ -4,7 +4,8 @@ import os
 import setuptools
 import sys
 
-# FIXME explain why this is here
+# Do not store version number redundantly, but import package before
+# install and get the version number from there.
 sys.path.insert(0,
     os.path.join(
         os.path.dirname(__file__),

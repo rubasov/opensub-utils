@@ -6,7 +6,7 @@ import unittest
 
 from os.path import join
 
-# FIXME explain why this is here
+# Make it possible to run out of the working copy.
 sys.path.insert(0,
     os.path.join(
         os.path.dirname(__file__),

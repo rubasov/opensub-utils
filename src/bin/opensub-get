@@ -161,7 +161,8 @@ else:
 
 import docopt
 
-# FIXME explain why this is here
+# Make it possible to run out of the working copy.
+# This is irrelevant after install.
 sys.path.insert(0,
     os.path.join(
         os.path.dirname(__file__),

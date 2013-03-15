@@ -1,3 +1,5 @@
+"""See __init__.py for what is considered public."""
+
 import errno
 import itertools
 import logging
@@ -102,7 +104,7 @@ def hash_file(file_, file_size=None):
         hash as a zero-padded, 16-digit, lower case hex string
 
     Raises:
-        Exception - file too small
+        Exception - file too small: < 128 KiB
     """
 
     fmt = "q"  # long long

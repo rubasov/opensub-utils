@@ -141,7 +141,12 @@ See Also:
         http://www.opensubtitles.org/upload/
 
     Open Subtitles DataBase:
-        http://trac.opensubtitles.org/projects/opensubtitles/wiki/OSDb
+        http://trac.opensubtitles.org \\
+            /projects/opensubtitles/wiki/OSDb
+
+    Alternatives:
+        http://trac.opensubtitles.org \\
+            /projects/opensubtitles/wiki/ProgramsUsingAPI
 
 Credits:
     Many thanks to opensubtitles.org's folks for their great service.

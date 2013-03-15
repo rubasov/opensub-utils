@@ -52,7 +52,6 @@ def safe_open(path, overwrite=False):
         # Open the file only if the open actually creates it,
         # that is do not overwrite an existing file.
 
-        # FIXME how much portable is this? unix only?
         # http://docs.python.org/2/library/os.html#open-flag-constants
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
         return os.fdopen(fd, "wb")
@@ -157,11 +156,6 @@ class UserAgent(object):
 
         self.server = server
         self.opener = opener
-
-    # maybe FIXME encode urls
-    #
-    # Depending on where the inputs come from you may need to
-    # construct the urls more carefully and care for url encoding.
 
     # FIXME Which variant of ISO 639 is accepted?
     #

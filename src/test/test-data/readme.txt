@@ -6,8 +6,7 @@
 
 * breakdance.avi
 
-  Ignored by git, because of its size,
-  make test will download it at first run.
+  Ignored by git, because of its size, will be downloaded on demand.
 
   http://www.opensubtitles.org/addons/avi/breakdance.avi
   http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes

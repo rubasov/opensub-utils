@@ -5,5 +5,3 @@
 __pycache__/
 
 src/test/test-data/breakdance.avi
-
-*.tar.gz

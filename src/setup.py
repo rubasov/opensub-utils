@@ -32,7 +32,6 @@ setuptools.setup(
         "docopt",
         "six",
         ],
-    license="BSD",  # FIXME
     name="opensub",
     package_dir={
         "": "lib",

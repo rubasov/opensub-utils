@@ -17,6 +17,16 @@ import opensub
 setuptools.setup(
     author="Bence Romsics",
     author_email="rubasov+opensub@gmail.com",
+    classifiers=[
+        "Environment :: Console",
+        "Intended Audience :: End Users/Desktop",
+        "License :: OSI Approved :: BSD License",
+        "Natural Language :: English",
+        "Operating System :: POSIX",
+        "Programming Language :: Python :: 2.7",
+        "Topic :: Multimedia :: Video",
+        "Topic :: Utilities",
+        ],
     description="CLI utilities for opensubtitles.org.",
     install_requires=[
         "docopt",

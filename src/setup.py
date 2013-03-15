@@ -46,7 +46,7 @@ setuptools.setup(
     tests_require=[
         "nose",
         ],
-    url="http://github.com/rubasov/...",  # FIXME
+    url="https://github.com/rubasov/opensub-utils",
     version=opensub.__version__,
     zip_safe=False,
     )

@@ -420,7 +420,7 @@ class FilenameBuilder(object):
     replace the movie extension with the subtitle extension.
 
     Later, I ended up with a much more generic templating. For details
-    see NAMING SCHEMES in the manual of opensub-get.
+    see Naming Schemes in the manual of opensub-get.
 
     NOTE We do not protect our user from silly combinations of
          templates and input filenames like:

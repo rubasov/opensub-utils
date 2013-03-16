@@ -30,12 +30,12 @@ Options:
     -x, --extract
         Extract output files as they are.
         Mutually exclusive with --template.
-        See NAMING SCHEMES in manual (--manual).
+        See Naming Schemes in manual (--manual).
 
     -t <template>, --template=<template>
         Name output files according to template.
         Mutually exclusive with --extract.
-        See NAMING SCHEMES in manual (--manual).
+        See Naming Schemes in manual (--manual).
         [default: {video/dir}{video/base}{subtitle/ext}]
 """
 

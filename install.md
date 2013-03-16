@@ -39,8 +39,10 @@ you want python3.
 It works in place, without installation.
 
     # Download docopt.py from github to src/lib/ .
+    wget -O ... http://.../docopt.py
 
     # Add src/bin/ to your PATH.
+    vi ~/.bashrc
 
 ### Install by pip and setuptools
 
@@ -52,7 +54,8 @@ It works in place, without installation.
     # Install opensub-utils to your home by setuptools.
     python src/setup.py install --user
 
-    # Add $HOME/.local/bin/ to your PATH.
+    # Add $HOME/.local/bin/ to your PATH if you didn't do that already.
+    vi ~/.bashrc
 
 ## Test the result
 
@@ -85,7 +88,10 @@ In case you want to run the tests.
 
 # Python3
 
-## Edit the hashbang lines
+The source is basically valid under both python2 and python3. On the other
+hand I only occasionally test it using python3, so I wouldn't be surprised if
+a few errors slipped through. Let me know if you actually use it under
+python3. One more thing: you may want to change the hashbang lines to python3.
 
 ## Additional dependencies for python3
 

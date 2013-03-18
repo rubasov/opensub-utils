@@ -111,7 +111,7 @@ Subtitle File Naming Schemes:
 
         '--template -' writes the concatenated output to stdout.
 
-Environment Variables:
+Environment:
     http_proxy=proxy:port - For details see Python's urrlib2.
     TMPDIR, TEMP, TMP - For details see Python's tempfile.
 

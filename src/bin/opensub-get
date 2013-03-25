@@ -8,6 +8,7 @@ Usage:
     opensub-get [-v | -vv]
                 [-f | --force]
                 [-l <language> | --language=<language>]
+                [-n <N> | --search-result=<N>]
                 [-s <server> | --server=<server>]
                 [--extract | --template=<template>]
                 [--]
@@ -23,6 +24,9 @@ Options:
 
     -l <language>, --language=<language>
         ISO 639 code of subtitle language. [default: eng]
+
+    -n <N>, --search-result=<N>
+        Use Nth search result, counting from 1. [default: 1]
 
     -s <server>, --server=<server>
         Subtitle server. [default: www.opensubtitles.org]
@@ -273,6 +277,7 @@ def print_not_found_hint(file_):
         ...the video has embedded subtitles?
                Typical for .mkv files.
         ...you could try a different --language?
+        ...you could try an earlier --search-result?
         ...you could try other search options?
                By title, IMDb id, etc.
                http://www.opensubtitles.org/search/
@@ -302,10 +307,11 @@ def main():
         )
 
     try:
-        preferred_result = search_results[0]
+        idx = int(args["--search-result"]) - 1
+        preferred_result = search_results[idx]
 
     except IndexError:
-        logging.error("subtitle not found")
+        logging.error("no (such) search result")
         sys.stdout.flush()
         print_not_found_hint(sys.stderr)
         sys.exit(1)

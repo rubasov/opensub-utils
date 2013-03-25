@@ -66,7 +66,7 @@ It works in place, without installation.
 
 # Uninstall
 
-Just delete the files. In case you used '--user' to install it to your home
+Just delete the files. In case you used `--user` to install it to your home
 directory than you need to remove:
 
     rm -ir ~/.local/bin/opensub-* \

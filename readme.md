@@ -21,7 +21,7 @@ for the exact same video file(s) you have.
 
 This program calculates and prints the hash of video files you give it.
 
-# Examples
+## Examples
 
     $ ls -1
     la jetee.mkv

@@ -8,8 +8,8 @@ Usage:
     opensub-get [-v | -vv]
                 [-f | --force]
                 [-l <language> | --language=<language>]
-                [-n <N> | --search-result=<N>]
-                [-s <server> | --server=<server>]
+                [-n <N>        | --search-result=<N>]
+                [-s <server>   | --server=<server>]
                 [--extract | --template=<template>]
                 [--]
                 <video-files>...
@@ -81,7 +81,7 @@ Subtitle File Naming Schemes:
 
         Internally uses template: {video/dir}{video/base}{subtitle/ext}
 
-    2) Extract the archive as it is: --extract.
+    2) Extract the archive as it is: --extract
 
         Keep the subtitle file names as they are in the archive,
         but throw away the leading directories if there's any.

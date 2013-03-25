@@ -8,5 +8,5 @@
 
   Ignored by git, because of its size, will be downloaded on demand.
 
-  http://www.opensubtitles.org/addons/avi/breakdance.avi
-  http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
+  * http://www.opensubtitles.org/addons/avi/breakdance.avi
+  * http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes

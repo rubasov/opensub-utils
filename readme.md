@@ -63,7 +63,7 @@ This program calculates and prints the hash of video files you give it.
 
 # See also
 
-* [opensubtitles.org](http://opensubtitles.org)
+* http://opensubtitles.org
 * `opensub-get --help`
 * `opensub-get --manual`
 * `opensub-hash --help`

@@ -1,51 +1,9 @@
-redesign
-    the decision that subtitles are distributed in a zip file should be hidden
-        introduce concept of (interface for) SearchResult(List)
-            this concept should be used by both UserAgent and SubtitleGetter
-        turn SubtitleArchive into SubtitleCollection
-        turn extract_archive into SubtitleCollection.get
-        SearchResult ?= SubtitleCollection
-    how well your design hid that the search interface is suboptimal?
-        think about the ideal file-by-file search
-    consider using xml-rpc search
-packaging
-    improve setup.py
-        http://docs.python.org/2/distutils/setupscript.html#additional-meta-data
-        http://docs.python.org/2/distutils/apiref.html#distutils.core.setup
-upload to github
-    ask for review by opensubtitles folks
-    readme.md
-    install.md
-    MANIFEST
 user interface
     direct input of movie hash?
-    select 2nd, 3rd, etc. search result
-    language
-        multiple languages in preference order
-            --language lang1,lang2,...
-        validate language id
-        method to set default language(s) permanently
-            config file?
-            environment variable?
-                use LANGUAGE ??
-document
-    public interface
-      __init__.py
-    design document
-      choices
-      decisions
-      benefits, drawbacks
-    dependencies and portability
-        python versions: 2.7/3.2
-    unix only?
-misc
-    hashbang lines are non-portable between python2 and python3
-        template them? barf...
-    use properly sortable version numbers
-        be compatible with
-            http://wiki.python.org/moin/Distutils/VersionComparison
-            semver 2.0
+    have a config file for defaults
+        --language
+        --server
+    multiple languages in preference order
+        --language lang1,lang2,...
+    validate language id
 bug tracker
-
-find /home/rubasov/m/movie/ -iname '*.avi' -print0 | sort -z | xargs -0 -n1 dirname | uniq -d | xargs -d \\n -I {} find {} -iname '*.avi' | xargs -d \\n opensub-hash | sort -k2
-http://trac.opensubtitles.org/projects/opensubtitles/wiki/OSDb

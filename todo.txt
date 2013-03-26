@@ -6,4 +6,9 @@ user interface
     multiple languages in preference order
         --language lang1,lang2,...
     validate language id
+log
+    argv
+    script and library versions
+simplify setup_logging()
+fix markdown syntax crap in developer-notes.md
 bug tracker

@@ -318,7 +318,7 @@ class SubtitleArchive(object):
 
     def _urlopen_via_tempfile(self):
 
-        # zipfile needs a seekable file-like objects.
+        # zipfile needs seekable file-like objects.
         # Therefore we download the remote file to a local temporary file.
 
         # See the notes here on why we need a *Named*TemporaryFile:

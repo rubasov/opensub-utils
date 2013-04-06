@@ -10,5 +10,4 @@ log
     argv
     script and library versions
 simplify setup_logging()
-fix markdown syntax crap in developer-notes.md
 bug tracker

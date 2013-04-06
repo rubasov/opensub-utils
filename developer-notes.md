@@ -30,9 +30,9 @@
 
   Both may have valid uses, think of:
 
-      * one subtitle file uploaded for an episode right after it came out
-      * subtitle collection uploaded for the whole series after the series
-        ended (for consistent quality, ease of download, etc)
+    * one subtitle file uploaded for an episode right after it came out
+    * subtitle collection uploaded for the whole series after the series
+      ended (for consistent quality, ease of download, etc)
 
 * file hash
 
@@ -41,9 +41,9 @@
 
   The hash is a function of:
 
-      * file size
-      * first 64 KiB chunk of file
-      * last 64 KiB chunk of file
+    * file size
+    * first 64 KiB chunk of file
+    * last 64 KiB chunk of file
 
   So we need minimal I/O to calculate it.
 
@@ -62,9 +62,9 @@
 
   By using xml-rpc we could:
 
-      * make mass searches and downloads perform better
-      * make subtitle upload possible
-      * access standalone subtitle files instead of archives
+    * make mass searches and downloads perform better
+    * make subtitle upload possible
+    * access standalone subtitle files instead of archives
 
   So far I didn't need any of these so I just kept it simple.
 
@@ -72,10 +72,10 @@
 
   My basic choices were:
 
-      1. Handle collections of video/subtitle files as a unit,
-         i.e. identify movie by hash of first file and cd count.
-      2. Handle standalone video/subtitle files as a unit,
-         i.e. identify each video file by its own file hash.
+    1. Handle collections of video/subtitle files as a unit,
+       i.e. identify movie by hash of first file and cd count.
+    2. Handle standalone video/subtitle files as a unit,
+       i.e. identify each video file by its own file hash.
 
   Option (2) seems to be simpler and more generic, but there is a hidden
   drawback for multi-cd movies: We could end up having subtitle files
@@ -95,8 +95,8 @@
   All this seems to be a confusingly gray area in the interface of the
   subtitle database, and I may have added a bit to the confusion by
   favoring
-       * option (1) in opensub-get, but
-       * option (2) in opensub-hash.
+    * option (1) in opensub-get, but
+    * option (2) in opensub-hash.
 
   With option (1) we have a mapping like:
 
@@ -105,12 +105,12 @@
 
   It may be a good idea to experiment with option (3):
 
-      3. Perform search by each file hash.
-         Cluster (group by) results by movie title returned by search.
-         Download subtitles for clusters.
+    3. Perform search by each file hash.
+       Cluster (group by) results by movie title returned by search.
+       Download subtitles for clusters.
 
-         In other words: transfer the responsibility of clustering
-         from our user to the subtitle database.
+       In other words: transfer the responsibility of clustering
+       from our user to the subtitle database.
 
 * Not implementing search by name or upload.
 

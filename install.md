@@ -52,7 +52,8 @@ It works in place, without installation.
     pip install --user docopt
 
     # Install opensub-utils to your home by setuptools.
-    python src/setup.py install --user
+    cd src/
+    python setup.py install --user
 
     # Add $HOME/.local/bin/ to your PATH if you didn't do that already.
     vi ~/.bashrc

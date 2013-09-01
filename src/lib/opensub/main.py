@@ -374,7 +374,7 @@ class SubtitleArchive(object):
         template_counter = itertools.count(1)
         count_of_files_written = 0
 
-        for template_num, video_path, subtitle_file in zip(
+        for template_num, video_path, subtitle_file in itertools.izip(
             template_counter, movie, self.yield_open()):
 
             dst = builder.build(
